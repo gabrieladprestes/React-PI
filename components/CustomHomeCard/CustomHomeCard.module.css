@@ -1,0 +1,24 @@
+.image_container{
+    background-color:#FA7F08;
+    padding: 20px; 
+    border-radius: 10px;
+    margin-right: 50px;
+    width: 150px;
+    height: 150px;
+    flex-shrink: 0;
+    transition: 0.5s;
+}
+
+.image_container:hover{
+    transform: scale(1.1,1.1);
+}
+
+.image{
+    border-radius: 10px;
+}
+
+.title{
+    color: white;
+    margin-top: 5px;
+    text-align: center;
+}
