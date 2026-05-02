@@ -1,136 +1,48 @@
+"use client";
+import styles from "./CadastroAnimal.module.css";
+import { CustomTextInput } from "@/components/CustomTextInput/CustomTextInput";
+import { CustomSelectInput } from "@/components/CustomSelectInput/CustomSelectInput";
+import { ISelectInput } from "@/interfaces/selectInput.interface";
+import { CustomRadioContainer } from "@/components/CustomRadioContainer/CustomRadioContainer";
+import { CustomRadioInput } from "@/components/CustomRadioInput/CustomRadioInput";
+import { CustomRadioTextInput } from "@/components/CustomRadioTextInput/CustomRadioTextInput";
 
 export default function CadastroAnimal() {
+  const idadeSelect: ISelectInput[] = [{id: 1, text: "Filhote"}, {id: 2, text: "Adulto"}, {id: 3, text: "Senior"}];
+  const porteSelect: ISelectInput[] = [{id: 1, text: "Pequeno"}, {id: 2, text: "Médio"}, {id: 3, text: "Grande"}];
+
   return (
     <>
-    <section className="conteiner">
-    <div className="pa1">
-      <h1>Cadastre seu animalzinho!!</h1>
-    </div>
-    <br/>
-    <br/>
-    <br/>
-
-    <div className="infpet">
-      <div className="ftpet">
-        Foto do pet
-      </div>
-
-      <form className="meuform">
-        <label htmlFor="npet" id="nomepet">Nome do animal</label>
-        <input type="text" value="" placeholder="ex: Max" name="nomepet"></input>
-        <br/>
-        <label htmlFor="idade" id="idade">idade</label>
-        <select className="idade">
-          <option> Filhote</option>
-          <option> Adulto</option>
-          <option> Senior</option>
-        </select>
-        <br/>
-        <label htmlFor="porte" id="porte">Porte do animal (apenas para cães)</label>
-        <select id="porte">
-          <option>Pequeno</option>
-          <option> Médio</option>
-          <option> Grande</option>
-        </select>
-      </form>
-    </div>
-    <br/>
-    <br/>
-    <br/>
-    <br/>
-    <br/>
-    <br/>
-    <br/>
-
-
-
-    {/* <!--formulario 2--> */}
-    <section id="boxformulario2">
-      <div className="todas">
-        <div className="grupo1">
-          <span className="titulo">Espécie</span>
-          <label className="radio">
-            <input type="radio" name="especie" value="felino" />
-            <span className="bolinha"></span>
-            Felino
-          </label>
-
-          <label className="radio">
-            <input type="radio" name="especie" value="canino" />
-            <span className="bolinha"></span>
-            Canino
-          </label>
+      <section style={styles} className={styles.container}>
+        <div style={styles} className={styles.container_title} >
+          <h1>Cadastre seu animalzinho!!</h1>
         </div>
 
-        <div className="grupo2">
-          <span className="titulo">Sexo</span>
-          <label className="radio">
-            <input type="radio" name="sexo" value="macho"/>
-            <span className="bolinha"></span>
-            Macho
-          </label>
+        <section style={styles} className={styles.info_container}>
+          <div style={styles} className={styles.photo_container} >
+            <div style={styles} className={styles.pet_photo}>
+              <p>Foto do pet</p>
+            </div>
+          </div>
 
-          <label className="radio">
-            <input type="radio" name="sexo" value="femea"/>
-            <span className="bolinha"></span>
-            Fêmea
-          </label>
-        </div>
+          <div style={styles} className={styles.inputs_container} >
+            <CustomTextInput name="nomePet" label="Nome" placeholder="Digite aqui" />
+            
+            <CustomSelectInput forId="idade" label="Idade" name="idadePet" items={idadeSelect} />
+            
+            <CustomSelectInput forId="porte" label="Porte" name="portePet" items={porteSelect} />
+          </div>
+        </section>
 
-        <div className="grupo3">
-          <span className="titulo">Castrado</span>
-          <label className="radio">
-            <input type="radio" name="castrado" value="sim"/>
-            <span className="bolinha"></span>
-            Sim
-          </label>
+        <CustomRadioContainer>
+          <CustomRadioInput title="Espécie" name="especie" firstValue="felino" firstLabel="Felino" secondValue="canino" secondLabel="Canino" />
+          <CustomRadioInput title="Sexo" name="sexo" firstValue="macho" firstLabel="Macho" secondValue="femea" secondLabel="Fêmea" />
+          <CustomRadioInput title="Castrado" name="castrado" firstValue="sim" firstLabel="Sim" secondValue="nao" secondLabel="Não" />
+          <CustomRadioTextInput title="Microchipado" name="microchipado" firstValue="sim" firstLabel="Sim" secondValue="nao" secondLabel="Não" placeholder="Digite aqui" />
+        </CustomRadioContainer>
 
-          <label className="radio">
-            <input type="radio" name="castrado" value="nao"/>
-            <span className="bolinha"></span>
-            Não
-          </label>
-        </div>
-
-        <div className="grupo4">
-          <span className="titulo">É microchipado?</span>
-          <label className="radio">
-            <input type="radio" name="micro" value="sim"/>
-            <span className="bolinha"></span>
-            Sim
-          </label>
-
-          <label className="radio">
-            <input type="radio" name="micro" value="nao"/>
-            <span className="bolinha"></span>
-            Não
-          </label>
-
-          <input className="microchip-input" type="text" placeholder="Número do microchip"/>
-        </div>
-      </div>
-    </section>
-    <br/>
-    <br/>
-    <div className="adPet">
-      <p> +</p>
-    </div>
-    <div className="adPet">
-      <p> +</p>
-
-    </div>
-    <div className="adPet">
-      <p> +</p>
-
-    </div>
-    <div className="adPet">
-      <p> +</p>
-
-    </div>
-    <button id="submit">Cadastrar</button>
-    <br/>
-    <br/>
-  </section>
-  </>
+        <button style={styles} id={styles.submit}>Cadastrar</button>
+      </section>
+    </>
   );
 }

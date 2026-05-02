@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
 .button{
     width: 240px;
     height: 40px;
@@ -10,6 +12,7 @@
     justify-content: center;
     align-items: center;
     transition: 0.2s;
+    font-family: "Outfit", sans-serif;
 }
 
 .button:hover{
