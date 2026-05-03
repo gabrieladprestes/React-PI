@@ -57,8 +57,8 @@ export default function Home() {
         <br/>
 
         <div style={styles} className={styles.button_container}>
-            <CustomButtonHome link="../CadastroAnimal" text="Sou Doador" />
-            <CustomButtonHome link="/perfilDonatario" text="Sou Donatário" />
+            <CustomButtonHome link="../PerfilDoador" text="Sou Doador" />
+            <CustomButtonHome link="../PerfilDonatario" text="Sou Donatário" />
         </div>
     </CustomPaddingContainer>
   );

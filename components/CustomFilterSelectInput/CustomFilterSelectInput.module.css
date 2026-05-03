@@ -1,0 +1,13 @@
+.input_container {
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+}
+
+.filter_input {
+    border: solid 2px #FA7F08;
+    border-radius: 4px;
+    padding: 6px;
+    background-color: #f7f5f5;
+    width: 100%;
+}
