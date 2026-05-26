@@ -62,4 +62,9 @@
     border-radius: 10px;
     color: #fff;
     text-align: center;
+    transition: background-color 0.2s ease;
+}
+
+.buttons_profile a:hover{
+    background-color: #e97908;
 }

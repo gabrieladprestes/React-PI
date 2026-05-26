@@ -52,7 +52,7 @@ export default function HistoricoDoacoes() {
             column4: "0923094",
             column5: "3 pacotes",
             column6: "Marca Premiere",
-            link: "#",
+            link: "../ReciboDoacao",
         },
         {
             id: 2,
@@ -62,7 +62,7 @@ export default function HistoricoDoacoes() {
             column4: "8402735",
             column5: "2 pacotes",
             column6: "Marca Magnus",
-            link: "#",
+            link: "../ReciboDoacao",
         },
         {
             id: 3,
@@ -72,7 +72,7 @@ export default function HistoricoDoacoes() {
             column4: "4628429",
             column5: "1 pacotes",
             column6: "Nenhuma",
-            link: "#",
+            link: "../ReciboDoacao",
         }]
 
     return (
@@ -85,11 +85,13 @@ export default function HistoricoDoacoes() {
                 />
                 <CustomFilterDateInput 
                     label="Data da Doação" 
-                    name="data doacao" 
+                    name="data doacao"
+                    validade={false}
                 />
                 <CustomFilterDateInput 
                     label="Validade" 
-                    name="validade" 
+                    name="validade"
+                    validade={true}
                 />
                 <CustomFilterTextInput 
                     placeholder="Lote" 

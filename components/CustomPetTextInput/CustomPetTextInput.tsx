@@ -10,7 +10,7 @@ export const CustomPetTextInput = (props: CustomPetTextInputProps) => {
     return(
         <>
             <label className={styles.label} htmlFor={props.name} >{props.label}</label>
-            <input className={styles.input} type="text" placeholder={props.placeholder} name={props.name} />
+            <input className={styles.input} type="text" placeholder={props.placeholder} name={props.name} required />
         </>
     )
 }

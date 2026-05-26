@@ -1,0 +1,41 @@
+.titulo{
+    font-size: 50px;
+    font-weight: 600;
+    color: #348888;
+}
+
+.aviso{
+    color: #F24405;
+    background-color: #FCEEE9;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.selerac{
+    color: #348888;
+    background-color: #9EF8EE;
+    justify-self: center;
+    padding-inline: 12%;
+    border-radius: 10px;
+}
+
+.selerac li{
+    display: inline-block;
+    justify-content: center;
+    padding: 20px;
+    font-size: 14px;
+}
+
+.selecpet{
+    margin: 1px;
+    list-style-type: square;
+}
+
+.selerac li:hover{
+    color: #F24405;
+    transition: 0.5s;
+}
+
+.linhabolhas{
+    justify-self: center;
+}

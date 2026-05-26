@@ -30,7 +30,7 @@ export default function PerfilDonatario() {
                 <div className={styles.buttons_profile}>
                     <a href="../HistoricoRetiradas">Histórico de Retiradas</a>
                     <a href="../CadastroAnimal">Cadastrar Pet</a>
-                    <a href="paginaAgendamentoDoacao.html">Agendar Retirada</a>
+                    <a href="../CatalagoRacao">Nova Retirada</a>
                 </div>
             </div>
         </>

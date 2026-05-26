@@ -1,0 +1,41 @@
+.racicon{
+    width: 200px;
+}
+.linhabolhas{
+    justify-self: center;
+}
+.racbolha{
+    justify-self: center;
+    display: inline-block;
+    text-align: center;
+    background-color: #9EF8EE;
+    padding: 20px;
+    font-weight: 600;
+    margin: 50px;
+    border-radius: 16px;
+    border: 2px solid black;
+    cursor: pointer;
+    transition: 1s;
+}
+
+.racbolha p{
+    margin-bottom: 16px;
+}
+
+.btnagend{
+    background-color: #F24405;
+    padding: 8px;
+    border-radius: 12px;
+    border: none;
+    font-family: "Outfit", sans-serif;
+    color: white;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.454);
+}
+.btnagend:hover{
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.836);
+    background-color: #ba3504;
+    transition: 0.5s;
+}
+.racbolha:hover{
+    transform: translateY(-15px);
+}

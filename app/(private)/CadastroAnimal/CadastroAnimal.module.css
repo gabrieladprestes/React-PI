@@ -77,14 +77,15 @@
     width: 15rem; /* 240px */
     height: 2.5rem;
     border-radius: 10px;
-    background-color: #F24405;
+    background-color: #FA7F08;
     font-family: "Outfit", sans-serif;
     border: none;
     color: white;
     cursor: pointer;
+    transition: 0.2s ease;
 }
 
 #submit:hover {
-    transform: translateY(-7px);
-    transition: 0.3s;
+    /* transform: translateY(-7px); */
+    background-color: #e97908;
 }

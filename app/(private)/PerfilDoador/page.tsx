@@ -28,8 +28,8 @@ export default function PerfilDoador() {
                 </div>
                 <div className={styles.buttons_profile}>
                     <a href="../HistoricoDoacoes">Histórico de doações</a>
-                    <a href="paginaRank.html">Visualizar Ranking</a>
-                    <a href="paginaAgendamentoDoacao.html">Agendar doação</a>
+                    <a href="../Ranking">Visualizar Ranking</a>
+                    <a href="../AgendarDoacao">Agendar doação</a>
                 </div>
             </div>
         </>

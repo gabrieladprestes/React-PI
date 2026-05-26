@@ -4,7 +4,7 @@
     width: 240px;
     height: 40px;
     border-radius: 10px;
-    background-color: #F24405;
+    background-color: #FA7F08;
     border: none;
     color: white;
     cursor: pointer;
@@ -16,5 +16,5 @@
 }
 
 .button:hover{
-    background-color: #d33800;
+    background-color: #de7309;
 }

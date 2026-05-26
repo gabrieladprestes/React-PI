@@ -52,7 +52,7 @@ export default function HistoricoRetiradas() {
             column4: "48102104",
             column5: "1 pacote",
             column6: "Nenhuma",
-            link: "#",
+            link: "../ReciboRetirada",
         },
         {
             id: 2,
@@ -62,7 +62,7 @@ export default function HistoricoRetiradas() {
             column4: "8402735",
             column5: "2 pacotes",
             column6: "Marca Magnus",
-            link: "#",
+            link: "../ReciboRetirada",
         },
         {
             id: 3,
@@ -72,7 +72,7 @@ export default function HistoricoRetiradas() {
             column4: "82741024",
             column5: "2 pacotes",
             column6: "Nenhuma",
-            link: "#",
+            link: "../ReciboRetirada",
         }]
     
     return(
@@ -85,11 +85,13 @@ export default function HistoricoRetiradas() {
                 />
                 <CustomFilterDateInput 
                     label="Data da Doação" 
-                    name="data doacao" 
+                    name="data doacao"
+                    validade={false}
                 />
                 <CustomFilterDateInput 
                     label="Validade" 
-                    name="validade" 
+                    name="validade"
+                    validade={true}
                 />
                 <CustomFilterTextInput 
                     placeholder="Lote" 
