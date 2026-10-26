@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {
     LayoutDashboard,
+    Headset,
     Package,
     BarChart2,
     PackagePlus,
@@ -30,6 +31,7 @@ import logoPrefeitura from "./img/logo_prefeituraVotorantim.png";
 // Título mostrado no topo de cada página do admin
 const titulos: Record<string, string> = {
     "/Admin/DashboardAdmin": "Painel Administrativo",
+    "/Admin/Atendimento": "🧾 Atendimento",
     "/Admin/ConsultaEstoque": "📊 Consulta de Estoque",
     "/Admin/ReceberDoacao": "📥 Recebimento de Doação",
     "/Admin/RetiradaDoacao": "📤 Saída de Doação",
@@ -66,6 +68,10 @@ export default function PrivateLayout({ children }: { children: React.ReactNode 
                 <nav className={styles.sidebarNav}>
                     <Link href="/Admin/DashboardAdmin" className={styles.submenuLink} onClick={fechar}>
                         <LayoutDashboard size={16} /> Dashboard
+                    </Link>
+
+                    <Link href="/Admin/Atendimento" className={styles.submenuLink} onClick={fechar}>
+                        <Headset size={16} /> Atendimento
                     </Link>
 
                     <div>

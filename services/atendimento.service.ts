@@ -1,0 +1,75 @@
+import { EspeciePet, IAdminDonatario, IAdminPet, PortePet } from "../interfaces/adminDonatario.interface";
+import { IAdminEstoque } from "../interfaces/adminEstoque.interface";
+import { IAdminHistoricoRetirada } from "../interfaces/adminHistoricoRetirada.interface";
+import { IAdminCotaProduto } from "../interfaces/adminAtendimento.interface";
+import { mockDonatarios } from "./mocks/donatarios.mock";
+import { mockEstoque } from "./mocks/estoque.mock";
+import { mockRetiradas } from "./mocks/retiradas.mock";
+import { ehMesAtual } from "../utils/dateUtils";
+import { disponivelParaLiberar } from "../utils/estoqueUtils";
+
+// Regra provisória de cota (kg por mês) até a regra oficial ser definida
+export const COTA_MENSAL_KG: Record<EspeciePet, Record<PortePet, number>> = {
+    Cachorro: { Pequeno: 3, Médio: 6, Grande: 10 },
+    Gato:     { Pequeno: 3, Médio: 3, Grande: 3 },
+};
+
+// Produto do estoque que cada espécie recebe
+export const PRODUTO_POR_ESPECIE: Record<EspeciePet, string> = {
+    Cachorro: "RC001",
+    Gato: "RG001",
+};
+
+const somenteDigitos = (texto: string) => texto.replace(/\D/g, "");
+
+// As funções abaixo leem dos mocks. Quando a API existir, basta trocar o corpo por um fetch.
+
+export async function buscarDonatarios(termo: string): Promise<IAdminDonatario[]> {
+    const nome = termo.trim().toLowerCase();
+    const cpf = somenteDigitos(termo);
+    if (!nome) return [];
+    return mockDonatarios.filter(d =>
+        d.nome.toLowerCase().includes(nome) ||
+        (cpf.length > 0 && somenteDigitos(d.cpf).includes(cpf))
+    );
+}
+
+export async function buscarEstoque(): Promise<IAdminEstoque[]> {
+    return mockEstoque;
+}
+
+export async function buscarRetiradasDoMes(cpf: string): Promise<IAdminHistoricoRetirada[]> {
+    return mockRetiradas.filter(r => r.cpf === cpf && ehMesAtual(r.dataRetirada));
+}
+
+export function calcularCotas(
+    pets: IAdminPet[],
+    retiradasDoMes: IAdminHistoricoRetirada[],
+    estoque: IAdminEstoque[],
+): IAdminCotaProduto[] {
+    const cotaPorProduto = new Map<string, number>();
+    pets.forEach(pet => {
+        const codigo = PRODUTO_POR_ESPECIE[pet.especie];
+        cotaPorProduto.set(codigo, (cotaPorProduto.get(codigo) ?? 0) + COTA_MENSAL_KG[pet.especie][pet.porte]);
+    });
+
+    return [...cotaPorProduto].map(([codigo, cotaMensal]) => {
+        const produto = estoque.find(p => p.codigo === codigo);
+        const retiradoMes = retiradasDoMes
+            .flatMap(r => r.itens)
+            .filter(i => i.codigo === codigo)
+            .reduce((acc, i) => acc + i.quantidade, 0);
+        const saldoCota = Math.max(cotaMensal - retiradoMes, 0);
+        const disponivelEstoque = produto ? disponivelParaLiberar(produto.lotes) : 0;
+
+        return {
+            codigo,
+            nome: produto?.nome ?? codigo,
+            cotaMensal,
+            retiradoMes,
+            saldoCota,
+            disponivelEstoque,
+            liberado: Math.min(saldoCota, disponivelEstoque),
+        };
+    });
+}

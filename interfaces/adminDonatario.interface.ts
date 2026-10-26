@@ -1,7 +1,11 @@
+export type EspeciePet = "Cachorro" | "Gato";
+export type PortePet = "Pequeno" | "Médio" | "Grande";
+
 export interface IAdminPet {
     id: number;
     nome: string;
-    especie: string;
+    especie: EspeciePet;
+    porte: PortePet;
 }
 
 export interface IAdminDonatario {
