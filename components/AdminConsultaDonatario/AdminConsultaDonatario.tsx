@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import styles from "./AdminConsultaDonatario.module.css";
 import { IAdminDonatario } from "../../interfaces/adminDonatario.interface";
 import { listarDonatarios } from "../../services/donatarios.service";
+import { somenteDigitos } from "../../utils/textoUtils";
 
 export function AdminConsultaDonatario() {
     const [busca, setBusca] = useState("");
@@ -13,9 +14,11 @@ export function AdminConsultaDonatario() {
         listarDonatarios().then(setDonatarios);
     }, []);
 
+    // Nome, ou CPF com ou sem pontuação
+    const digitos = somenteDigitos(busca);
     const lista = donatarios.filter(d =>
-        d.nome.toLowerCase().includes(busca.toLowerCase()) ||
-        d.cpf.includes(busca)
+        d.nome.toLowerCase().includes(busca.trim().toLowerCase()) ||
+        (digitos.length > 0 && somenteDigitos(d.cpf).includes(digitos))
     );
 
     function fecharModal() {

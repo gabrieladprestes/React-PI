@@ -4,6 +4,7 @@ export interface IAdminDoacaoAgendada {
     nomeDoador: string;
     cpfCnpj: string;
     telefone: string;
+    codigoProduto: string;
     item: string;
     quantidade: number;
     dataAgendada: string;

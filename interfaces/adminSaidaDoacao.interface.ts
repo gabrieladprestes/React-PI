@@ -1,4 +1,5 @@
 export interface IAdminSaidaItem {
+    codigoProduto: string;
     item: string;
     quantidadeSolicitada: number;
     quantidadeEntregue: number;

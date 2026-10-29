@@ -16,6 +16,7 @@ export interface IAdminSolicitacaoRetirada {
     dataSolicitacao: string;
     dataAgendada: string;
     status: 'pendente' | 'aprovado' | 'recusado' | 'entregue' | 'cancelado';
+    observacao?: string;
 }
 
 // Proposta de doação feita pelo doador.
@@ -28,6 +29,28 @@ export interface IAdminSolicitacaoDoacao {
     quantidade: number;
     dataProposta: string;
     status: 'pendente' | 'aprovado' | 'recusado' | 'recebido';
+    observacao?: string;
+}
+
+// Item conferido no recebimento de uma doação.
+// O lote interno é gerado pelo sistema; o do fabricante é opcional.
+export interface IAdminItemRecebido {
+    codigoProduto: string;
+    loteFabricante: string;
+    validade: string;
+    quantidade: number;
+}
+
+// Quanto sai de cada lote interno na entrega
+export interface IAdminLoteEntregue {
+    lote: string;
+    quantidade: number;
+}
+
+// Item conferido na entrega de uma retirada
+export interface IAdminItemEntregue {
+    codigoProduto: string;
+    lotes: IAdminLoteEntregue[];
 }
 
 // Cadastro do doador sem o histórico (o histórico vem das doações recebidas)

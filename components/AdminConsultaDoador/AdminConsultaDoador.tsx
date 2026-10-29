@@ -4,6 +4,7 @@ import styles from "./AdminConsultaDoador.module.css";
 import { IAdminDoador } from "../../interfaces/adminDoador.interface";
 import { listarDoadores } from "../../services/doadores.service";
 import { formatarData } from "../../utils/dateUtils";
+import { somenteDigitos } from "../../utils/textoUtils";
 
 export function AdminConsultaDoador() {
     const [busca, setBusca] = useState("");
@@ -14,9 +15,11 @@ export function AdminConsultaDoador() {
         listarDoadores().then(setDoadores);
     }, []);
 
+    // Nome, ou CPF/CNPJ com ou sem pontuação
+    const digitos = somenteDigitos(busca);
     const lista = doadores.filter(d =>
-        d.nome.toLowerCase().includes(busca.toLowerCase()) ||
-        d.cpfCnpj.includes(busca)
+        d.nome.toLowerCase().includes(busca.trim().toLowerCase()) ||
+        (digitos.length > 0 && somenteDigitos(d.cpfCnpj).includes(digitos))
     );
 
     function fecharModal() {
