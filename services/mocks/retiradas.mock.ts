@@ -1,20 +1,82 @@
-import { IAdminHistoricoRetirada } from "../../interfaces/adminHistoricoRetirada.interface";
-import { dataNoMesAtual } from "../../utils/dateUtils";
+import { IAdminHistoricoItem, IAdminHistoricoRetirada } from "../../interfaces/adminHistoricoRetirada.interface";
+import { IAdminSolicitacaoRetirada } from "../../interfaces/adminSolicitacao.interface";
+import { dataNoMesAtual, dataRelativa, diaDoMesAtual } from "../../utils/dateUtils";
+import { donatarioPorId } from "./donatarios.mock";
+import { produtoPorCodigo } from "./produtos.mock";
 
+// [código do produto, lote, quantidade]
+type ItemCurto = [string, string, number];
+
+function item([codigo, lote, quantidade]: ItemCurto): IAdminHistoricoItem {
+    const produto = produtoPorCodigo(codigo);
+    return { codigo, nome: produto?.nome ?? codigo, tipo: produto?.tipo ?? "", lote, quantidade };
+}
+
+function retirada(id: number, donatarioId: number, itens: ItemCurto[], dataRetirada: string, responsavel: string): IAdminHistoricoRetirada {
+    const d = donatarioPorId(donatarioId);
+    return {
+        id,
+        codigoAgendamento: `RET-2026-${String(id).padStart(3, "0")}`,
+        donatario: d.nome,
+        cpf: d.cpf,
+        itens: itens.map(item),
+        dataRetirada,
+        responsavel,
+    };
+}
+
+// Histórico: retiradas já entregues
 export const mockRetiradas: IAdminHistoricoRetirada[] = [
-    { id: 1,  codigoAgendamento: "RET-2026-001", donatario: "Beatriz Lima",     cpf: "123.456.789-01", itens: [{ codigo: "RC001", nome: "Ração de Cachorro", tipo: "Ração",       lote: "L001", quantidade: 5  }], dataRetirada: "2026-01-15", responsavel: "Ana Paula"   },
-    { id: 2,  codigoAgendamento: "RET-2026-002", donatario: "Marcos Souza",     cpf: "234.567.890-12", itens: [{ codigo: "RG001", nome: "Ração de Gato",     tipo: "Ração",       lote: "L004", quantidade: 3  }], dataRetirada: "2026-01-20", responsavel: "João Carlos"  },
-    { id: 3,  codigoAgendamento: "RET-2026-003", donatario: "Luciana Ferreira", cpf: "345.678.901-23", itens: [{ codigo: "RC001", nome: "Ração de Cachorro", tipo: "Ração",       lote: "L001", quantidade: 8  }, { codigo: "RG001", nome: "Ração de Gato", tipo: "Ração", lote: "L004", quantidade: 2 }], dataRetirada: "2026-02-05", responsavel: "Ana Paula"   },
-    { id: 4,  codigoAgendamento: "RET-2026-004", donatario: "Paulo Henrique",   cpf: "456.789.012-34", itens: [{ codigo: "RC001", nome: "Ração de Cachorro", tipo: "Ração",       lote: "L002", quantidade: 10 }], dataRetirada: "2026-02-18", responsavel: "João Carlos"  },
-    { id: 5,  codigoAgendamento: "RET-2026-005", donatario: "Cristina Almeida", cpf: "567.890.123-45", itens: [{ codigo: "RG001", nome: "Ração de Gato",     tipo: "Ração",       lote: "L005", quantidade: 5  }], dataRetirada: "2026-03-02", responsavel: "Ana Paula"   },
-    { id: 6,  codigoAgendamento: "RET-2026-006", donatario: "Diego Nascimento", cpf: "678.901.234-56", itens: [{ codigo: "RC001", nome: "Ração de Cachorro", tipo: "Ração",       lote: "L002", quantidade: 6  }, { codigo: "RG001", nome: "Ração de Gato", tipo: "Ração", lote: "L004", quantidade: 4 }], dataRetirada: "2026-03-15", responsavel: "João Carlos"  },
-    { id: 7,  codigoAgendamento: "RET-2026-007", donatario: "Simone Martins",   cpf: "789.012.345-67", itens: [{ codigo: "RC001", nome: "Ração de Cachorro", tipo: "Ração",       lote: "L003", quantidade: 4  }], dataRetirada: "2026-03-28", responsavel: "Ana Paula"   },
-    { id: 8,  codigoAgendamento: "RET-2026-008", donatario: "Tadeu Ribeiro",    cpf: "890.123.456-78", itens: [{ codigo: "RG001", nome: "Ração de Gato",     tipo: "Ração",       lote: "L005", quantidade: 7  }], dataRetirada: "2026-04-10", responsavel: "João Carlos"  },
-    { id: 9,  codigoAgendamento: "RET-2026-009", donatario: "Beatriz Lima",     cpf: "123.456.789-01", itens: [{ codigo: "RC001", nome: "Ração de Cachorro", tipo: "Ração",       lote: "L001", quantidade: 5  }, { codigo: "PC001", nome: "Petisco Cachorro", tipo: "Petisco", lote: "P001", quantidade: 2 }], dataRetirada: "2026-04-22", responsavel: "Ana Paula"   },
-    { id: 10, codigoAgendamento: "RET-2026-010", donatario: "Eduardo Campos",   cpf: "012.345.678-90", itens: [{ codigo: "RC001", nome: "Ração de Cachorro", tipo: "Ração",       lote: "L002", quantidade: 9  }], dataRetirada: "2026-05-03", responsavel: "João Carlos"  },
-    { id: 11, codigoAgendamento: "RET-2026-011", donatario: "Vanessa Rocha",    cpf: "901.234.567-89", itens: [{ codigo: "RG001", nome: "Ração de Gato",     tipo: "Ração",       lote: "L004", quantidade: 3  }, { codigo: "PG001", nome: "Petisco Gato", tipo: "Petisco", lote: "P002", quantidade: 2 }], dataRetirada: "2026-05-15", responsavel: "Ana Paula"   },
-    { id: 12, codigoAgendamento: "RET-2026-012", donatario: "Paulo Henrique",   cpf: "456.789.012-34", itens: [{ codigo: "AP001", nome: "Antipulgas",        tipo: "Medicamento", lote: "M003", quantidade: 1  }], dataRetirada: "2026-05-28", responsavel: "João Carlos"  },
-    // Retiradas sempre no mês atual, para a tela de Atendimento ter dados para mostrar
-    { id: 13, codigoAgendamento: "RET-2026-013", donatario: "Maria Silva",      cpf: "123.456.789-00", itens: [{ codigo: "RC001", nome: "Ração de Cachorro", tipo: "Ração",       lote: "L001", quantidade: 4  }], dataRetirada: dataNoMesAtual(2), responsavel: "Ana Paula"   },
-    { id: 14, codigoAgendamento: "RET-2026-014", donatario: "Beatriz Lima",     cpf: "123.456.789-01", itens: [{ codigo: "RC001", nome: "Ração de Cachorro", tipo: "Ração",       lote: "L001", quantidade: 3  }], dataRetirada: dataNoMesAtual(5), responsavel: "João Carlos"  },
+    retirada(1,  4,  [["RC001", "L001", 5]],                       dataRelativa(-180), "Ana Paula"),
+    retirada(2,  5,  [["RG001", "L004", 3]],                       dataRelativa(-170), "João Carlos"),
+    retirada(3,  6,  [["RC001", "L001", 8], ["RG001", "L004", 2]], dataRelativa(-155), "Ana Paula"),
+    retirada(4,  7,  [["RC001", "L002", 10]],                      dataRelativa(-140), "João Carlos"),
+    retirada(5,  8,  [["RG001", "L005", 5]],                       dataRelativa(-125), "Ana Paula"),
+    retirada(6,  9,  [["RC001", "L002", 6], ["RG001", "L004", 4]], dataRelativa(-110), "João Carlos"),
+    retirada(7,  10, [["RC001", "L003", 4]],                       dataRelativa(-95),  "Ana Paula"),
+    retirada(8,  11, [["RG001", "L005", 7]],                       dataRelativa(-80),  "João Carlos"),
+    retirada(9,  4,  [["RC001", "L001", 5], ["PC001", "P001", 2]], dataRelativa(-70),  "Ana Paula"),
+    retirada(10, 13, [["RC001", "L002", 9]],                       dataRelativa(-60),  "João Carlos"),
+    retirada(11, 12, [["RG001", "L004", 3], ["PG001", "P002", 2]], dataRelativa(-50),  "Ana Paula"),
+    retirada(12, 7,  [["AP001", "M003", 1]],                       dataRelativa(-40),  "João Carlos"),
+    // Sempre no mês atual, para a tela de Atendimento ter retiradas do mês para mostrar
+    retirada(13, 1,  [["RC001", "L001", 4]],                       dataNoMesAtual(2),  "Ana Paula"),
+    retirada(14, 4,  [["RC001", "L001", 3]],                       dataNoMesAtual(5),  "João Carlos"),
+];
+
+function solicitacao(
+    id: number,
+    donatarioId: number,
+    itens: [string, number][],
+    dataSolicitacao: string,
+    dataAgendada: string,
+    status: IAdminSolicitacaoRetirada["status"],
+): IAdminSolicitacaoRetirada {
+    return {
+        id,
+        codigoAgendamento: `RET-2026-${String(id).padStart(3, "0")}`,
+        donatarioId,
+        itens: itens.map(([codigoProduto, quantidade]) => ({ codigoProduto, quantidade })),
+        dataSolicitacao,
+        dataAgendada,
+        status,
+    };
+}
+
+// Pedidos de retirada ainda não entregues
+export const mockSolicitacoesRetirada: IAdminSolicitacaoRetirada[] = [
+    // Aguardando análise (Gerenciar Agendas)
+    solicitacao(15, 1,  [["RC001", 5], ["RG001", 2]], dataRelativa(-1), dataRelativa(3), "pendente"),
+    solicitacao(16, 5,  [["RG001", 3]],               dataRelativa(-1), dataRelativa(4), "pendente"),
+    solicitacao(17, 7,  [["RC001", 8]],               dataRelativa(-2), dataRelativa(5), "pendente"),
+    solicitacao(18, 12, [["RC001", 4], ["RG001", 2]], dataRelativa(0),  dataRelativa(6), "pendente"),
+    solicitacao(19, 2,  [["RC001", 15]],              dataRelativa(-6), dataRelativa(2), "recusado"),
+    // Aprovadas: aparecem no Calendário e na Saída de Doação
+    solicitacao(20, 4,  [["RC001", 3]],               dataRelativa(-20), diaDoMesAtual(3),  "aprovado"),
+    solicitacao(21, 6,  [["RC001", 3], ["RG001", 2]], dataRelativa(-15), diaDoMesAtual(8),  "aprovado"),
+    solicitacao(22, 8,  [["RG001", 3]],               dataRelativa(-12), diaDoMesAtual(12), "aprovado"),
+    solicitacao(23, 9,  [["RC001", 4], ["RG001", 2]], dataRelativa(-12), diaDoMesAtual(12), "aprovado"),
+    solicitacao(24, 10, [["RC001", 3]],               dataRelativa(-8),  diaDoMesAtual(17), "aprovado"),
+    solicitacao(25, 11, [["RG001", 3]],               dataRelativa(-5),  diaDoMesAtual(22), "aprovado"),
+    solicitacao(26, 13, [["RC001", 10]],              dataRelativa(-3),  diaDoMesAtual(26), "aprovado"),
 ];

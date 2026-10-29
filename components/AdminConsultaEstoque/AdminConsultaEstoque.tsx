@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./AdminConsultaEstoque.module.css";
 import { IAdminEstoque } from "../../interfaces/adminEstoque.interface";
-import { mockEstoque } from "../../services/mocks/estoque.mock";
+import { buscarEstoque } from "../../services/estoque.service";
+import { formatarData } from "../../utils/dateUtils";
 import { StatusValidade, statusGeral, statusValidade, totalEstoque, totalReservado } from "../../utils/estoqueUtils";
 
 function badgeValidade(status: StatusValidade, s: Record<string, string>) {
@@ -21,11 +22,19 @@ export const AdminConsultaEstoque = () => {
     const [busca, setBusca] = useState("");
     const [tipo, setTipo] = useState("");
     const [filtroStatus, setFiltroStatus] = useState("");
-    const [resultado, setResultado] = useState<IAdminEstoque[]>(mockEstoque);
+    const [estoque, setEstoque] = useState<IAdminEstoque[]>([]);
+    const [resultado, setResultado] = useState<IAdminEstoque[]>([]);
     const [produtoSelecionado, setProdutoSelecionado] = useState<IAdminEstoque | null>(null);
 
+    useEffect(() => {
+        buscarEstoque().then(dados => {
+            setEstoque(dados);
+            setResultado(dados);
+        });
+    }, []);
+
     function buscar() {
-        setResultado(mockEstoque.filter(item => {
+        setResultado(estoque.filter(item => {
             const sg = statusGeral(item.lotes);
             return (
                 (!tipo || item.tipo === tipo) &&
@@ -158,7 +167,7 @@ export const AdminConsultaEstoque = () => {
                                                 <td className={disp < 0 ? styles.dispNegativo : styles.dispPositivo}>
                                                     {disp}
                                                 </td>
-                                                <td>{new Date(lote.validade).toLocaleDateString("pt-BR")}</td>
+                                                <td>{formatarData(lote.validade)}</td>
                                                 <td>
                                                     <span className={`${styles.badge} ${badgeValidade(sv, styles)}`}>
                                                         {labelValidade(sv)}

@@ -10,5 +10,6 @@ export interface IAdminAgenda {
     telefone: string;
     itensSolicitados: IAdminAgendaItem[];
     dataSolicitacao: string;
+    dataAgendada: string;
     status: 'pendente' | 'aprovado' | 'recusado';
 }

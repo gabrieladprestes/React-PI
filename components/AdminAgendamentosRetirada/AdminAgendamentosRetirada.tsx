@@ -1,36 +1,24 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./AdminAgendamentosRetirada.module.css";
 import { IAdminAgendamento } from "../../interfaces/adminAgendamento.interface";
 import { IAdminAgendaDoacao } from "../../interfaces/adminAgendaDoacao.interface";
-
-const mockRetiradas: IAdminAgendamento[] = [
-    { id: 1,  donatario: "Maria Silva",      item: "Ração de Cachorro", quantidade: 5, data: "2026-06-03", status: "Confirmado" },
-    { id: 2,  donatario: "Carlos Souza",     item: "Ração de Gato",     quantidade: 2, data: "2026-06-03", status: "Confirmado" },
-    { id: 3,  donatario: "Beatriz Campos",   item: "Ração de Cachorro", quantidade: 4, data: "2026-06-09", status: "Confirmado" },
-    { id: 4,  donatario: "Sandra Alves",     item: "Ração de Cachorro", quantidade: 6, data: "2026-06-12", status: "Confirmado" },
-    { id: 5,  donatario: "Lucas Barbosa",    item: "Ração de Gato",     quantidade: 5, data: "2026-06-19", status: "Confirmado" },
-    { id: 6,  donatario: "Marcos Oliveira",  item: "Ração de Gato",     quantidade: 4, data: "2026-06-19", status: "Confirmado" },
-    { id: 7,  donatario: "Ana Lima",         item: "Ração de Cachorro", quantidade: 3, data: "2026-06-24", status: "Confirmado" },
-    { id: 8,  donatario: "João Pereira",     item: "Ração de Gato",     quantidade: 1, data: "2026-06-24", status: "Confirmado" },
-    { id: 9,  donatario: "Camila Rocha",     item: "Ração de Cachorro", quantidade: 7, data: "2026-06-30", status: "Confirmado" },
-    { id: 10, donatario: "Fernanda Costa",   item: "Ração de Gato",     quantidade: 2, data: "2026-06-30", status: "Confirmado" },
-];
-
-const mockDoacoes: IAdminAgendaDoacao[] = [
-    { id: 1, doador: "João Pereira",          cpfCnpj: "987.654.321-00",     telefone: "(15) 98888-0002", item: "Ração de Cachorro", quantidade: 10, dataProposta: "2026-06-04", status: "aprovado" },
-    { id: 2, doador: "Empresa Ração Certa",   cpfCnpj: "12.345.678/0001-99", telefone: "(15) 3333-0001",  item: "Ração de Gato",     quantidade: 20, dataProposta: "2026-06-04", status: "aprovado" },
-    { id: 3, doador: "Maria Oliveira",        cpfCnpj: "111.222.333-44",     telefone: "(15) 97777-0003", item: "Ração de Cachorro", quantidade: 5,  dataProposta: "2026-06-10", status: "aprovado" },
-    { id: 4, doador: "Supermercado BomPreço", cpfCnpj: "98.765.432/0001-11", telefone: "(15) 4444-0010",  item: "Ração de Gato",     quantidade: 30, dataProposta: "2026-06-17", status: "aprovado" },
-    { id: 5, doador: "Carlos Mendes",         cpfCnpj: "222.333.444-55",     telefone: "(15) 96666-0005", item: "Ração de Cachorro", quantidade: 8,  dataProposta: "2026-06-17", status: "aprovado" },
-    { id: 6, doador: "Pet Shop Amigo Fiel",   cpfCnpj: "55.444.333/0001-22", telefone: "(15) 2222-0020",  item: "Ração de Gato",     quantidade: 15, dataProposta: "2026-06-25", status: "aprovado" },
-];
+import { buscarRetiradasAgendadas } from "../../services/retiradas.service";
+import { buscarDoacoesConfirmadas } from "../../services/doacoes.service";
+import { formatarData, getTodayDate } from "../../utils/dateUtils";
 
 const DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 export const AdminAgendamentosRetirada = () => {
     const [aba, setAba] = useState<"retiradas" | "doacoes">("retiradas");
     const [diaSelecionado, setDiaSelecionado] = useState<number | null>(null);
+    const [retiradas, setRetiradas] = useState<IAdminAgendamento[]>([]);
+    const [doacoes, setDoacoes] = useState<IAdminAgendaDoacao[]>([]);
+
+    useEffect(() => {
+        buscarRetiradasAgendadas().then(setRetiradas);
+        buscarDoacoesConfirmadas().then(setDoacoes);
+    }, []);
 
     const hoje = new Date();
     const ano = hoje.getFullYear();
@@ -40,20 +28,17 @@ export const AdminAgendamentosRetirada = () => {
     const primeiroDia = new Date(ano, mes, 1).getDay();
     const totalDias = new Date(ano, mes + 1, 0).getDate();
 
-    const dadosAtivos = aba === "retiradas" ? mockRetiradas : mockDoacoes;
+    // Datas são texto "AAAA-MM-DD": comparamos pelo texto para não sofrer com fuso horário
+    const mesAtual = getTodayDate().slice(0, 7);
+    const dataDoDia = (dia: number) => `${mesAtual}-${String(dia).padStart(2, "0")}`;
 
-    const diasComAgendamento = dadosAtivos
-        .filter(a => {
-            const d = new Date(aba === "retiradas"
-                ? (a as IAdminAgendamento).data
-                : (a as IAdminAgendaDoacao).dataProposta
-            );
-            return d.getFullYear() === ano && d.getMonth() === mes;
-        })
-        .map(a => new Date(aba === "retiradas"
-            ? (a as IAdminAgendamento).data
-            : (a as IAdminAgendaDoacao).dataProposta
-        ).getDate());
+    const datasAtivas = aba === "retiradas"
+        ? retiradas.map(a => a.data)
+        : doacoes.map(a => a.dataProposta);
+
+    const diasComAgendamento = datasAtivas
+        .filter(d => d.slice(0, 7) === mesAtual)
+        .map(d => Number(d.slice(8)));
 
     const celulas: (number | null)[] = [];
     for (let i = 0; i < primeiroDia; i++) {
@@ -81,12 +66,12 @@ export const AdminAgendamentosRetirada = () => {
     }
 
     const retiradaExibidas = diaSelecionado
-        ? mockRetiradas.filter(a => new Date(a.data).getDate() === diaSelecionado)
-        : mockRetiradas;
+        ? retiradas.filter(a => a.data === dataDoDia(diaSelecionado))
+        : retiradas;
 
     const doacoesExibidas = diaSelecionado
-        ? mockDoacoes.filter(a => new Date(a.dataProposta).getDate() === diaSelecionado)
-        : mockDoacoes;
+        ? doacoes.filter(a => a.dataProposta === dataDoDia(diaSelecionado))
+        : doacoes;
 
     const tituloLista = diaSelecionado
         ? `${aba === "retiradas" ? "Retiradas" : "Doações"} do dia ${diaSelecionado}`
@@ -160,7 +145,7 @@ export const AdminAgendamentosRetirada = () => {
                                             <td>{a.donatario}</td>
                                             <td>{a.item}</td>
                                             <td>{a.quantidade}</td>
-                                            <td>{new Date(a.data).toLocaleDateString("pt-BR")}</td>
+                                            <td>{formatarData(a.data)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -183,7 +168,7 @@ export const AdminAgendamentosRetirada = () => {
                                             <td>{a.doador}</td>
                                             <td>{a.item}</td>
                                             <td>{a.quantidade}</td>
-                                            <td>{new Date(a.dataProposta).toLocaleDateString("pt-BR")}</td>
+                                            <td>{formatarData(a.dataProposta)}</td>
                                         </tr>
                                     ))}
                                 </tbody>

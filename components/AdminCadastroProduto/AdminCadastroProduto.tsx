@@ -1,29 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./AdminCadastroProduto.module.css";
-
-interface IProduto {
-    id: number;
-    codigo: string;
-    nome: string;
-    tipo: string;
-    unidade: string;
-    descricao: string;
-    estoqueMinimo: number;
-}
-
-const produtosIniciais: IProduto[] = [
-    { id: 1, codigo: "RC001", nome: "Ração de Cachorro", tipo: "Ração",       unidade: "kg", descricao: "Ração seca para cães adultos",    estoqueMinimo: 20 },
-    { id: 2, codigo: "RG001", nome: "Ração de Gato",     tipo: "Ração",       unidade: "kg", descricao: "Ração seca para gatos adultos",   estoqueMinimo: 15 },
-    { id: 3, codigo: "VC001", nome: "Vermífugo Cães",    tipo: "Medicamento", unidade: "un", descricao: "Vermífugo oral para cães",         estoqueMinimo: 10 },
-    { id: 4, codigo: "VG001", nome: "Vermífugo Gatos",   tipo: "Medicamento", unidade: "un", descricao: "Vermífugo oral para gatos",        estoqueMinimo: 10 },
-    { id: 5, codigo: "AP001", nome: "Antipulgas",        tipo: "Medicamento", unidade: "un", descricao: "Antipulgas e carrapatos",          estoqueMinimo: 8  },
-    { id: 6, codigo: "PC001", nome: "Petisco Cachorro",  tipo: "Petisco",     unidade: "kg", descricao: "Petisco salgado para cães",        estoqueMinimo: 5  },
-    { id: 7, codigo: "PG001", nome: "Petisco Gato",      tipo: "Petisco",     unidade: "kg", descricao: "Petisco para gatos",               estoqueMinimo: 5  },
-];
+import { IAdminProduto } from "../../interfaces/adminProduto.interface";
+import { buscarProdutos } from "../../services/produtos.service";
 
 export const AdminCadastroProduto = () => {
-    const [produtos, setProdutos] = useState<IProduto[]>(produtosIniciais);
+    const [produtos, setProdutos] = useState<IAdminProduto[]>([]);
     const [codigo, setCodigo] = useState("");
     const [nome, setNome] = useState("");
     const [tipo, setTipo] = useState("");
@@ -32,6 +14,10 @@ export const AdminCadastroProduto = () => {
     const [estoqueMinimo, setEstoqueMinimo] = useState(0);
     const [erro, setErro] = useState("");
     const [sucesso, setSucesso] = useState(false);
+
+    useEffect(() => {
+        buscarProdutos().then(dados => setProdutos([...dados]));
+    }, []);
 
     function salvar(e: React.FormEvent) {
         e.preventDefault();
