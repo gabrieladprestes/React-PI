@@ -3,13 +3,14 @@ import { IAdminSolicitacaoRetirada } from "../../interfaces/adminSolicitacao.int
 import { dataNoMesAtual, dataRelativa, diaDoMesAtual } from "../../utils/dateUtils";
 import { donatarioPorId } from "./donatarios.mock";
 import { produtoPorCodigo } from "./produtos.mock";
+import { loteFabricanteDe } from "./estoque.mock";
 
 // [código do produto, lote, quantidade]
 type ItemCurto = [string, string, number];
 
 function item([codigo, lote, quantidade]: ItemCurto): IAdminHistoricoItem {
     const produto = produtoPorCodigo(codigo);
-    return { codigo, nome: produto?.nome ?? codigo, tipo: produto?.tipo ?? "", lote, quantidade };
+    return { codigo, nome: produto?.nome ?? codigo, tipo: produto?.tipo ?? "", lote, loteFabricante: loteFabricanteDe(lote), quantidade };
 }
 
 function retirada(id: number, donatarioId: number, itens: ItemCurto[], dataRetirada: string, responsavel: string): IAdminHistoricoRetirada {

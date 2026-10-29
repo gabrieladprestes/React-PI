@@ -3,6 +3,7 @@ export interface IAdminHistoricoItem {
     nome: string;
     tipo: string;
     lote: string;
+    loteFabricante?: string;
     quantidade: number;
 }
 

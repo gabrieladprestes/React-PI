@@ -90,7 +90,7 @@
 .modal {
     background: white;
     border-radius: 12px;
-    width: 560px;
+    width: 640px;
     max-width: 95vw;
     max-height: 90vh;
     overflow-y: auto;
@@ -260,4 +260,99 @@
 
 .btnConfirmar:hover {
     background: #d96b05;
+}
+
+.saldoBaixo {
+    color: #b42318;
+    font-weight: 600;
+}
+.semResultados {
+    text-align: center;
+    color: #888;
+    padding: 20px !important;
+}
+.msgErro {
+    background: #fdecea;
+    color: #b42318;
+    border: 1px solid #f5c2c0;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    margin: 0;
+}
+.msgSucesso {
+    background: #e7f6ef;
+    color: #1b6b4a;
+    border: 1px solid #b7e2cd;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+}
+
+/* Itens da entrega com escolha de lote */
+.dica {
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin: -6px 0 0;
+}
+.itemSaida {
+    border: 1px solid #e5eded;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.itemSaidaTopo {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 12px;
+    font-size: 0.85rem;
+    color: #555;
+}
+.itemSaidaTopo > strong {
+    color: #2a2a2a;
+}
+.loteLinha {
+    display: grid;
+    grid-template-columns: 1fr 110px 28px;
+    gap: 8px;
+    align-items: center;
+}
+.loteQtd {
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+.inputErro {
+    border-color: #b42318 !important;
+    color: #b42318;
+}
+.btnRemover {
+    background: none;
+    border: none;
+    color: #F24405;
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 2px 4px;
+    line-height: 1;
+}
+.btnMaisLote {
+    align-self: flex-start;
+    background: none;
+    border: none;
+    color: #348888;
+    font-size: 0.82rem;
+    cursor: pointer;
+    padding: 0;
+}
+.btnMaisLote:hover {
+    text-decoration: underline;
+}
+.loteInfo {
+    grid-column: 1 / -1;
+    margin-top: -4px;
+    font-size: 0.75rem;
+    color: #6b7280;
 }

@@ -102,7 +102,7 @@
     background: white;
     border-radius: 10px;
     width: 100%;
-    max-width: 560px;
+    max-width: 720px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.18);
     overflow: hidden;
 }
@@ -360,4 +360,72 @@
 
 .btnMostrarAdd:hover {
     background: #f0f9f9;
+}
+
+/* Grade de itens do recebimento: produto | lote | validade | quantidade | remover */
+.itensCabecalho,
+.itemGrade {
+    display: grid;
+    grid-template-columns: minmax(140px, 1fr) 150px 140px 110px 32px;
+    gap: 8px;
+    align-items: center;
+}
+.itensCabecalho {
+    font-size: 0.75rem;
+    color: #888;
+    font-weight: 600;
+}
+.itemGrade {
+    font-size: 0.9rem;
+}
+.itemBloco {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 8px;
+}
+.previaLote {
+    font-size: 0.75rem;
+    color: #348888;
+}
+.itemGrade .inputLote {
+    width: 100%;
+    box-sizing: border-box;
+}
+.inputValidade {
+    width: 100%;
+    padding: 4px 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    box-sizing: border-box;
+}
+.semResultados {
+    text-align: center;
+    color: #888;
+    padding: 20px !important;
+}
+.msgErro {
+    background: #fdecea;
+    color: #b42318;
+    border: 1px solid #f5c2c0;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    margin: 0;
+}
+.msgSucesso {
+    background: #e7f6ef;
+    color: #1b6b4a;
+    border: 1px solid #b7e2cd;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+}
+
+@media (max-width: 640px) {
+    .itensCabecalho { display: none; }
+    .itemGrade { grid-template-columns: 1fr 1fr; }
 }

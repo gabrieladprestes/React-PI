@@ -6,6 +6,7 @@ import { IAdminHistoricoDoacao } from "../../interfaces/adminHistoricoDoacao.int
 import { buscarHistoricoRetiradas } from "../../services/retiradas.service";
 import { buscarHistoricoDoacoes } from "../../services/doacoes.service";
 import { formatarData } from "../../utils/dateUtils";
+import { textoLoteFabricante } from "../../utils/estoqueUtils";
 
 function resumoItens(itens: { nome: string; quantidade: number }[]) {
     return itens.map(i => `${i.nome} (${i.quantidade} kg)`).join(", ");
@@ -219,7 +220,8 @@ export const AdminHistoricoRetiradas = () => {
                                         <th>Código</th>
                                         <th>Produto</th>
                                         <th>Tipo</th>
-                                        <th>Lote</th>
+                                        <th>Lote interno</th>
+                                        <th>Lote fabricante</th>
                                         <th>Quantidade</th>
                                     </tr>
                                 </thead>
@@ -230,6 +232,7 @@ export const AdminHistoricoRetiradas = () => {
                                             <td>{item.nome}</td>
                                             <td>{item.tipo}</td>
                                             <td>{item.lote}</td>
+                                            <td>{textoLoteFabricante(item.loteFabricante)}</td>
                                             <td>{item.quantidade} kg</td>
                                         </tr>
                                     ))}
@@ -263,7 +266,8 @@ export const AdminHistoricoRetiradas = () => {
                                         <th>Código</th>
                                         <th>Produto</th>
                                         <th>Tipo</th>
-                                        <th>Lote</th>
+                                        <th>Lote interno</th>
+                                        <th>Lote fabricante</th>
                                         <th>Quantidade</th>
                                     </tr>
                                 </thead>
@@ -274,6 +278,7 @@ export const AdminHistoricoRetiradas = () => {
                                             <td>{item.nome}</td>
                                             <td>{item.tipo}</td>
                                             <td>{item.lote}</td>
+                                            <td>{textoLoteFabricante(item.loteFabricante)}</td>
                                             <td>{item.quantidade} kg</td>
                                         </tr>
                                     ))}

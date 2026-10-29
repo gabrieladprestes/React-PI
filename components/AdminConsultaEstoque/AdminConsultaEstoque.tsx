@@ -4,7 +4,7 @@ import styles from "./AdminConsultaEstoque.module.css";
 import { IAdminEstoque } from "../../interfaces/adminEstoque.interface";
 import { buscarEstoque } from "../../services/estoque.service";
 import { formatarData } from "../../utils/dateUtils";
-import { StatusValidade, statusGeral, statusValidade, totalEstoque, totalReservado } from "../../utils/estoqueUtils";
+import { StatusValidade, statusGeral, statusValidade, textoLoteFabricante, totalEstoque, totalReservado } from "../../utils/estoqueUtils";
 
 function badgeValidade(status: StatusValidade, s: Record<string, string>) {
     if (status === "vencido") return s.badgeVencido;
@@ -147,7 +147,8 @@ export const AdminConsultaEstoque = () => {
                             <table className={styles.tabelaLotes}>
                                 <thead>
                                     <tr>
-                                        <th>Lote</th>
+                                        <th>Lote interno</th>
+                                        <th>Lote fabricante</th>
                                         <th>Saldo Estoque</th>
                                         <th>Saldo Reservado</th>
                                         <th>Disponível</th>
@@ -162,6 +163,7 @@ export const AdminConsultaEstoque = () => {
                                         return (
                                             <tr key={lote.lote}>
                                                 <td>{lote.lote}</td>
+                                                <td>{textoLoteFabricante(lote.loteFabricante)}</td>
                                                 <td>{lote.saldoEstoque}</td>
                                                 <td>{lote.saldoReservado}</td>
                                                 <td className={disp < 0 ? styles.dispNegativo : styles.dispPositivo}>
