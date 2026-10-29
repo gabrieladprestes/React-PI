@@ -6,7 +6,7 @@ import { IAdminEstoque } from "../../interfaces/adminEstoque.interface";
 import { buscarSaidasPendentes, cancelarEntrega, confirmarEntrega } from "../../services/retiradas.service";
 import { buscarEstoque } from "../../services/estoque.service";
 import { formatarData } from "../../utils/dateUtils";
-import { lotesParaSaida, saldoValido, sugerirLotesSaida, textoLoteFabricante } from "../../utils/estoqueUtils";
+import { disponivelParaLiberar, lotesParaSaida, sugerirLotesSaida, textoLoteFabricante } from "../../utils/estoqueUtils";
 import { AdminCampoBusca, IOpcaoBusca } from "../AdminCampoBusca/AdminCampoBusca";
 
 // Uma linha "lote + quantidade" dentro de um item da entrega
@@ -49,13 +49,18 @@ export function AdminSaidaDoacao() {
         return estoque.find(e => e.codigo === codigo)?.lotes ?? [];
     }
 
+    // O que esta retirada pode levar: o disponível + a reserva que já é dela (o solicitado)
+    function limiteEntrega(codigo: string, solicitado: number) {
+        return disponivelParaLiberar(lotesDoProduto(codigo)) + solicitado;
+    }
+
     // Abre já com a sugestão: lotes que vencem primeiro, até completar o solicitado
     function abrirModal(saida: IAdminSaidaDoacao) {
         let chave = 0;
         const sugestao: Record<string, ILinhaLote[]> = {};
         saida.itens.forEach(item => {
             const lotes = lotesDoProduto(item.codigoProduto);
-            const quantidade = Math.min(item.quantidadeSolicitada, saldoValido(lotes));
+            const quantidade = Math.min(item.quantidadeSolicitada, limiteEntrega(item.codigoProduto, item.quantidadeSolicitada));
             sugestao[item.codigoProduto] = sugerirLotesSaida(lotes, quantidade).map(s => ({ chave: ++chave, ...s }));
         });
         setSelecionada(saida);
@@ -249,13 +254,13 @@ export function AdminSaidaDoacao() {
                             {selecionada.itens.map(item => {
                                 const codigo = item.codigoProduto;
                                 const total = totalItem(codigo);
-                                const saldo = saldoValido(lotesDoProduto(codigo));
+                                const saldo = limiteEntrega(codigo, item.quantidadeSolicitada);
                                 return (
                                     <div key={codigo} className={styles.itemSaida}>
                                         <div className={styles.itemSaidaTopo}>
                                             <strong>{item.item}</strong>
                                             <span>
-                                                Solicitado {item.quantidadeSolicitada} kg · Em estoque {saldo} kg · A entregar{" "}
+                                                Solicitado {item.quantidadeSolicitada} kg · Pode sair {saldo} kg · A entregar{" "}
                                                 <strong className={total > item.quantidadeSolicitada ? styles.saldoBaixo : undefined}>{total} kg</strong>
                                             </span>
                                         </div>

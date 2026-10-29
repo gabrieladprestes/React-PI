@@ -4,7 +4,7 @@ import styles from "./AdminConsultaEstoque.module.css";
 import { IAdminEstoque } from "../../interfaces/adminEstoque.interface";
 import { buscarEstoque } from "../../services/estoque.service";
 import { formatarData } from "../../utils/dateUtils";
-import { StatusValidade, statusGeral, statusValidade, textoLoteFabricante, totalEstoque, totalReservado } from "../../utils/estoqueUtils";
+import { StatusValidade, disponivelParaLiberar, statusGeral, statusValidade, textoLoteFabricante, totalEstoque, totalReservado } from "../../utils/estoqueUtils";
 
 function badgeValidade(status: StatusValidade, s: Record<string, string>) {
     if (status === "vencido") return s.badgeVencido;
@@ -95,7 +95,8 @@ export const AdminConsultaEstoque = () => {
                     {resultado.map(item => {
                         const totalE = totalEstoque(item.lotes);
                         const totalR = totalReservado(item.lotes);
-                        const disponivel = totalE - totalR;
+                        // Mesma regra em todas as telas: lotes dentro da validade, menos o reservado
+                        const disponivel = disponivelParaLiberar(item.lotes);
                         const sg = statusGeral(item.lotes);
                         return (
                             <tr key={item.id}>
@@ -126,6 +127,7 @@ export const AdminConsultaEstoque = () => {
                     })}
                 </tbody>
             </table>
+            <p className={styles.legenda}>Disponível = saldo dos lotes dentro da validade, menos o que está reservado para retiradas aprovadas.</p>
 
             {produtoSelecionado && (
                 <div className={styles.backdrop} onClick={() => setProdutoSelecionado(null)}>
@@ -158,8 +160,8 @@ export const AdminConsultaEstoque = () => {
                                 </thead>
                                 <tbody>
                                     {produtoSelecionado.lotes.map(lote => {
-                                        const disp = lote.saldoEstoque - lote.saldoReservado;
                                         const sv = statusValidade(lote.validade);
+                                        const disp = sv === "vencido" ? 0 : lote.saldoEstoque - lote.saldoReservado;
                                         return (
                                             <tr key={lote.lote}>
                                                 <td>{lote.lote}</td>

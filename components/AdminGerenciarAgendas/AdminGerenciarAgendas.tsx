@@ -1,18 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
 import styles from "./AdminGerenciarAgendas.module.css";
-import { IAdminAgenda } from "../../interfaces/adminAgenda.interface";
+import { IAdminAgenda, IAdminAgendaItem } from "../../interfaces/adminAgenda.interface";
 import { IAdminAgendaDoacao } from "../../interfaces/adminAgendaDoacao.interface";
-import { buscarSolicitacoesRetirada } from "../../services/retiradas.service";
-import { buscarSolicitacoesDoacao } from "../../services/doacoes.service";
+import { IAdminEstoque } from "../../interfaces/adminEstoque.interface";
+import { aprovarRetirada, buscarSolicitacoesRetirada, reabrirRetirada, recusarRetirada } from "../../services/retiradas.service";
+import { aprovarDoacao, buscarSolicitacoesDoacao, reabrirDoacao, recusarDoacao } from "../../services/doacoes.service";
+import { buscarEstoque } from "../../services/estoque.service";
 import { formatarData } from "../../utils/dateUtils";
-
-// Saldo atual do estoque (em kg)
-// TODO (etapa 4): calcular a partir do estoque real (estoque.service) em vez de valores fixos
-const saldoEstoque: Record<string, number> = {
-    "Ração de Cachorro": 45,
-    "Ração de Gato": 8,
-};
+import { disponivelParaLiberar } from "../../utils/estoqueUtils";
 
 function badgeClass(status: string, s: Record<string, string>) {
     if (status === "aprovado") return s.badgeAprovado;
@@ -28,105 +24,141 @@ function labelStatus(status: string) {
 
 export const AdminGerenciarAgendas = () => {
     const [aba, setAba] = useState<"retiradas" | "doacoes">("retiradas");
-    const [expandido, setExpandido] = useState<number | null>(null);
+    // Card aberto: "r-15" (retirada) ou "d-12" (doação)
+    const [expandido, setExpandido] = useState<string | null>(null);
+    const [mensagem, setMensagem] = useState("");
+
+    const [retiradas, setRetiradas] = useState<IAdminAgenda[]>([]);
+    const [doacoes, setDoacoes] = useState<IAdminAgendaDoacao[]>([]);
+    const [estoque, setEstoque] = useState<IAdminEstoque[]>([]);
 
     // Filtros — retiradas
     const [filtroStatusR, setFiltroStatusR] = useState("");
     const [filtroNomeR, setFiltroNomeR] = useState("");
     const [filtroDataR, setFiltroDataR] = useState("");
-    const [retiradas, setRetiradas] = useState<IAdminAgenda[]>([]);
     const [resultadoR, setResultadoR] = useState<IAdminAgenda[]>([]);
 
     // Filtros — doações
     const [filtroStatusD, setFiltroStatusD] = useState("");
     const [filtroNomeD, setFiltroNomeD] = useState("");
     const [filtroDataD, setFiltroDataD] = useState("");
-    const [doacoes, setDoacoes] = useState<IAdminAgendaDoacao[]>([]);
     const [resultadoD, setResultadoD] = useState<IAdminAgendaDoacao[]>([]);
 
+    // Edições ainda não gravadas, por card ("r-15", "d-12")
+    const [datas, setDatas] = useState<Record<string, string>>({});
+    const [quantidades, setQuantidades] = useState<Record<string, number>>({}); // chave: "15-RC001"
+    const [observacoes, setObservacoes] = useState<Record<string, string>>({});
+    const [erros, setErros] = useState<Record<string, string>>({});
+
+    const filtrarR = (lista: IAdminAgenda[]) => lista.filter(r =>
+        (!filtroStatusR || r.status === filtroStatusR) &&
+        (!filtroNomeR || r.donatario.toLowerCase().includes(filtroNomeR.toLowerCase())) &&
+        (!filtroDataR || r.dataAgendada === filtroDataR)
+    );
+
+    const filtrarD = (lista: IAdminAgendaDoacao[]) => lista.filter(d =>
+        (!filtroStatusD || d.status === filtroStatusD) &&
+        (!filtroNomeD || d.doador.toLowerCase().includes(filtroNomeD.toLowerCase())) &&
+        (!filtroDataD || d.dataProposta === filtroDataD)
+    );
+
+    // Busca tudo de novo nos services (depois de cada decisão, cotas e estoque mudam)
+    async function recarregar(aplicarFiltros: boolean) {
+        const [r, d, e] = await Promise.all([buscarSolicitacoesRetirada(), buscarSolicitacoesDoacao(), buscarEstoque()]);
+        setRetiradas(r);
+        setDoacoes(d);
+        setEstoque(e);
+        setResultadoR(aplicarFiltros ? filtrarR(r) : r);
+        setResultadoD(aplicarFiltros ? filtrarD(d) : d);
+    }
+
     useEffect(() => {
-        buscarSolicitacoesRetirada().then(dados => {
-            setRetiradas(dados);
-            setResultadoR(dados);
-        });
-        buscarSolicitacoesDoacao().then(dados => {
-            setDoacoes(dados);
-            setResultadoD(dados);
+        Promise.all([buscarSolicitacoesRetirada(), buscarSolicitacoesDoacao(), buscarEstoque()]).then(([r, d, e]) => {
+            setRetiradas(r);
+            setResultadoR(r);
+            setDoacoes(d);
+            setResultadoD(d);
+            setEstoque(e);
         });
     }, []);
 
-    // Datas alteradas pelo funcionário (por id do agendamento)
-    const [datasAlteradas, setDatasAlteradas] = useState<Record<number, string>>({});
+    function toggleCard(chave: string) {
+        setExpandido(expandido === chave ? null : chave);
+    }
 
-    // Quantidades editadas pelo funcionário — chave: "agendaId-itemIndex"
-    const [quantidadesEditadas, setQuantidadesEditadas] = useState<Record<string, number>>({});
-
-    // Status alterados localmente — chave: "r-id" (retirada) ou "d-id" (doação)
-    const [statusAlterados, setStatusAlterados] = useState<Record<string, string>>({});
-
-    function filtrarRetiradas() {
-        setResultadoR(retiradas.filter(r =>
-            (!filtroStatusR || r.status === filtroStatusR) &&
-            (!filtroNomeR || r.donatario.toLowerCase().includes(filtroNomeR.toLowerCase())) &&
-            (!filtroDataR || r.dataSolicitacao === filtroDataR)
-        ));
+    function trocarAba(nova: "retiradas" | "doacoes") {
+        setAba(nova);
         setExpandido(null);
     }
 
-    function filtrarDoacoes() {
-        setResultadoD(doacoes.filter(d =>
-            (!filtroStatusD || d.status === filtroStatusD) &&
-            (!filtroNomeD || d.doador.toLowerCase().includes(filtroNomeD.toLowerCase())) &&
-            (!filtroDataD || d.dataProposta === filtroDataD)
-        ));
-        setExpandido(null);
+    function disponivel(codigo: string) {
+        const item = estoque.find(e => e.codigo === codigo);
+        return item ? disponivelParaLiberar(item.lotes) : 0;
     }
 
-    function toggleCard(id: number) {
-        setExpandido(expandido === id ? null : id);
+    function qtd(agenda: IAdminAgenda, item: IAdminAgendaItem) {
+        return quantidades[`${agenda.id}-${item.codigoProduto}`] ?? item.quantidade;
     }
 
-    function alterarData(id: number, data: string) {
-        setDatasAlteradas({ ...datasAlteradas, [id]: data });
+    // Situação de um item pendente: sem estoque bloqueia; acima da cota só avisa
+    function situacao(agenda: IAdminAgenda, item: IAdminAgendaItem) {
+        const q = qtd(agenda, item);
+        const cota = agenda.cotas.find(c => c.codigo === item.codigoProduto);
+        if (q > disponivel(item.codigoProduto)) return { texto: "Sem estoque", classe: styles.badgeRecusado, bloqueia: true };
+        if (!cota) return { texto: "Sem cota definida", classe: styles.badgePendente, bloqueia: false };
+        if (q > cota.saldoCota) return { texto: "Acima da cota", classe: styles.badgePendente, bloqueia: false };
+        return { texto: "OK", classe: styles.badgeAprovado, bloqueia: false };
     }
 
-    function getDataAtual(id: number, dataOriginal: string) {
-        return datasAlteradas[id] ?? dataOriginal;
+    function textoCota(agenda: IAdminAgenda, codigo: string) {
+        const cota = agenda.cotas.find(c => c.codigo === codigo);
+        if (!cota) return "—";
+        return `${cota.saldoCota} de ${cota.cotaMensal} kg`;
     }
 
-    function alterarQuantidade(agendaId: number, itemIndex: number, valor: number) {
-        const chave = `${agendaId}-${itemIndex}`;
-        setQuantidadesEditadas({ ...quantidadesEditadas, [chave]: valor });
+    // Executa uma decisão: mostra erro no card ou recarrega e avisa
+    async function executar(chave: string, acao: () => Promise<void>, texto: string) {
+        try {
+            await acao();
+            setErros({ ...erros, [chave]: "" });
+            setObservacoes({ ...observacoes, [chave]: "" });
+            await recarregar(true);
+            setMensagem(texto);
+            setTimeout(() => setMensagem(""), 5000);
+        } catch (e) {
+            setErros({ ...erros, [chave]: (e as Error).message });
+        }
     }
 
-    function getQuantidade(agendaId: number, itemIndex: number, qtdOriginal: number) {
-        const chave = `${agendaId}-${itemIndex}`;
-        return quantidadesEditadas[chave] ?? qtdOriginal;
+    function aprovarR(agenda: IAdminAgenda) {
+        const chave = `r-${agenda.id}`;
+        const itens = agenda.itensSolicitados.map(i => ({ codigoProduto: i.codigoProduto, quantidade: qtd(agenda, i) }));
+        executar(chave, () => aprovarRetirada(agenda.id, itens, datas[chave] ?? agenda.dataAgendada, observacoes[chave] ?? ""),
+            `Retirada ${agenda.codigoAgendamento} aprovada. A quantidade foi reservada no estoque.`);
     }
 
-    function getStatus(prefixo: string, id: number, statusOriginal: string) {
-        return statusAlterados[`${prefixo}-${id}`] ?? statusOriginal;
-    }
-
-    function definirStatus(prefixo: string, id: number, novoStatus: string) {
-        setStatusAlterados({ ...statusAlterados, [`${prefixo}-${id}`]: novoStatus });
+    function campoObservacao(chave: string, obrigatorio: string) {
+        return (
+            <div className={styles.observacao}>
+                <label>Observação / motivo</label>
+                <textarea
+                    placeholder={`Obrigatório para ${obrigatorio}...`}
+                    value={observacoes[chave] ?? ""}
+                    onChange={e => { setObservacoes({ ...observacoes, [chave]: e.target.value }); setErros({ ...erros, [chave]: "" }); }}
+                />
+            </div>
+        );
     }
 
     return (
         <div>
+            {mensagem && <p className={styles.msgSucesso}>{mensagem}</p>}
+
             <div className={styles.abas}>
-                <button
-                    type="button"
-                    className={aba === "retiradas" ? styles.abaAtiva : styles.aba}
-                    onClick={() => { setAba("retiradas"); setExpandido(null); }}
-                >
+                <button type="button" className={aba === "retiradas" ? styles.abaAtiva : styles.aba} onClick={() => trocarAba("retiradas")}>
                     Retiradas (Donatário)
                 </button>
-                <button
-                    type="button"
-                    className={aba === "doacoes" ? styles.abaAtiva : styles.aba}
-                    onClick={() => { setAba("doacoes"); setExpandido(null); }}
-                >
+                <button type="button" className={aba === "doacoes" ? styles.abaAtiva : styles.aba} onClick={() => trocarAba("doacoes")}>
                     Doações (Doador)
                 </button>
             </div>
@@ -148,32 +180,38 @@ export const AdminGerenciarAgendas = () => {
                             <input placeholder="Nome..." value={filtroNomeR} onChange={e => setFiltroNomeR(e.target.value)} />
                         </div>
                         <div>
-                            <label>Data</label>
-                            <input type="date" aria-label="Filtrar por data" value={filtroDataR} onChange={e => setFiltroDataR(e.target.value)} />
+                            <label>Data agendada</label>
+                            <input type="date" aria-label="Filtrar por data agendada" value={filtroDataR} onChange={e => setFiltroDataR(e.target.value)} />
                         </div>
-                        <button type="button" className={styles.btnFiltrar} onClick={filtrarRetiradas}>Filtrar</button>
+                        <button type="button" className={styles.btnFiltrar} onClick={() => { setResultadoR(filtrarR(retiradas)); setExpandido(null); }}>Filtrar</button>
                     </div>
 
                     <div className={styles.lista}>
                         {resultadoR.map(agenda => {
-                            const status = getStatus("r", agenda.id, agenda.status);
+                            const chave = `r-${agenda.id}`;
+                            const pendente = agenda.status === "pendente";
                             const resumo = agenda.itensSolicitados.length === 1
                                 ? agenda.itensSolicitados[0].item
                                 : `${agenda.itensSolicitados.length} itens solicitados`;
+                            const situacoes = agenda.itensSolicitados.map(i => situacao(agenda, i));
+                            const bloqueado = situacoes.some(s => s.bloqueia);
+                            const acimaCota = situacoes.some(s => s.texto === "Acima da cota" || s.texto === "Sem cota definida");
 
                             return (
-                                <div key={agenda.id} className={styles.card}>
-                                    <div className={styles.cardHeader} onClick={() => toggleCard(agenda.id)}>
+                                <div key={chave} className={styles.card}>
+                                    <div className={styles.cardHeader} onClick={() => toggleCard(chave)}>
                                         <div className={styles.cardHeaderInfo}>
                                             <strong>{agenda.donatario}</strong>
-                                            <span>Solicitado em {formatarData(agenda.dataSolicitacao)} — {resumo}</span>
+                                            <span>
+                                                {agenda.codigoAgendamento} · Solicitado em {formatarData(agenda.dataSolicitacao)} · Agendado para {formatarData(agenda.dataAgendada)} — {resumo}
+                                            </span>
                                         </div>
-                                        <span className={`${styles.badge} ${badgeClass(status, styles)}`}>
-                                            {labelStatus(status)}
+                                        <span className={`${styles.badge} ${badgeClass(agenda.status, styles)}`}>
+                                            {labelStatus(agenda.status)}
                                         </span>
                                     </div>
 
-                                    {expandido === agenda.id && (
+                                    {expandido === chave && (
                                         <div className={styles.cardBody}>
                                             <div className={styles.dadosGrid}>
                                                 <p><strong>Nome:</strong> {agenda.donatario}</p>
@@ -188,58 +226,91 @@ export const AdminGerenciarAgendas = () => {
                                                         <tr>
                                                             <th>Item</th>
                                                             <th>Quantidade</th>
-                                                            <th>Saldo disponível</th>
+                                                            <th>Disponível</th>
+                                                            <th>Saldo da cota no mês</th>
+                                                            {pendente && <th>Situação</th>}
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        {agenda.itensSolicitados.map((it, i) => {
-                                                            const saldo = saldoEstoque[it.item] ?? 0;
-                                                            const qtd = getQuantidade(agenda.id, i, it.quantidade);
-                                                            const suficiente = saldo >= qtd;
-                                                            return (
-                                                                <tr key={i}>
-                                                                    <td>{it.item}</td>
-                                                                    <td>
+                                                        {agenda.itensSolicitados.map((it, i) => (
+                                                            <tr key={it.codigoProduto}>
+                                                                <td>{it.item}</td>
+                                                                <td>
+                                                                    {pendente ? (
                                                                         <input
                                                                             type="number"
-                                                                            aria-label="Quantidade"
+                                                                            aria-label={`Quantidade de ${it.item}`}
                                                                             className={styles.inputQtd}
-                                                                            value={qtd}
+                                                                            value={qtd(agenda, it)}
                                                                             min={0}
-                                                                            disabled={status !== "pendente"}
-                                                                            onChange={e => alterarQuantidade(agenda.id, i, Number(e.target.value))}
+                                                                            onChange={e => {
+                                                                                setQuantidades({ ...quantidades, [`${agenda.id}-${it.codigoProduto}`]: Number(e.target.value) });
+                                                                                setErros({ ...erros, [chave]: "" });
+                                                                            }}
                                                                         />
-                                                                    </td>
-                                                                    <td className={suficiente ? styles.saldoOk : styles.saldoBaixo}>
-                                                                        {saldo} kg
-                                                                    </td>
-                                                                </tr>
-                                                            );
-                                                        })}
+                                                                    ) : `${it.quantidade} kg`}
+                                                                </td>
+                                                                <td>{agenda.status === "aprovado" ? "Reservado" : `${disponivel(it.codigoProduto)} kg`}</td>
+                                                                <td>{textoCota(agenda, it.codigoProduto)}</td>
+                                                                {pendente && (
+                                                                    <td><span className={`${styles.badge} ${situacoes[i].classe}`}>{situacoes[i].texto}</span></td>
+                                                                )}
+                                                            </tr>
+                                                        ))}
                                                     </tbody>
                                                 </table>
                                             </div>
+
+                                            {pendente && acimaCota && (
+                                                <p className={styles.aviso}>
+                                                    Este pedido passa da cota do mês (ou o produto não tem cota para este donatário). Você pode aprovar mesmo assim; registre o motivo na observação.
+                                                </p>
+                                            )}
 
                                             <div className={styles.dataAlteracao}>
                                                 <label>Data de retirada</label>
                                                 <input
                                                     type="date"
                                                     aria-label="Data de retirada"
-                                                    disabled={status !== "pendente"}
-                                                    value={getDataAtual(agenda.id, agenda.dataAgendada)}
-                                                    onChange={e => alterarData(agenda.id, e.target.value)}
+                                                    disabled={!pendente}
+                                                    value={datas[chave] ?? agenda.dataAgendada}
+                                                    onChange={e => setDatas({ ...datas, [chave]: e.target.value })}
                                                 />
                                             </div>
 
+                                            {agenda.observacao && <p className={styles.motivo}><strong>Observação registrada:</strong> {agenda.observacao}</p>}
+                                            {pendente && campoObservacao(chave, "recusar")}
+                                            {erros[chave] && <p className={styles.msgErro}>{erros[chave]}</p>}
+
                                             <div className={styles.acoes}>
-                                                {status === "pendente" && (
+                                                {pendente && (
                                                     <>
-                                                        <button type="button" className={styles.btnAprovar} onClick={() => definirStatus("r", agenda.id, "aprovado")}>Aprovar</button>
-                                                        <button type="button" className={styles.btnRecusar} onClick={() => definirStatus("r", agenda.id, "recusado")}>Recusar</button>
+                                                        <button
+                                                            type="button"
+                                                            className={styles.btnAprovar}
+                                                            disabled={bloqueado}
+                                                            title={bloqueado ? "Há item sem estoque disponível" : undefined}
+                                                            onClick={() => aprovarR(agenda)}
+                                                        >
+                                                            Aprovar
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className={styles.btnRecusar}
+                                                            onClick={() => executar(chave, () => recusarRetirada(agenda.id, observacoes[chave] ?? ""), `Retirada ${agenda.codigoAgendamento} recusada.`)}
+                                                        >
+                                                            Recusar
+                                                        </button>
                                                     </>
                                                 )}
-                                                {(status === "aprovado" || status === "recusado") && (
-                                                    <button type="button" className={styles.btnReabrir} onClick={() => definirStatus("r", agenda.id, "pendente")}>Reabrir Solicitação</button>
+                                                {!pendente && (
+                                                    <button
+                                                        type="button"
+                                                        className={styles.btnReabrir}
+                                                        onClick={() => executar(chave, () => reabrirRetirada(agenda.id), `Retirada ${agenda.codigoAgendamento} reaberta.`)}
+                                                    >
+                                                        Reabrir Solicitação
+                                                    </button>
                                                 )}
                                             </div>
                                         </div>
@@ -247,6 +318,7 @@ export const AdminGerenciarAgendas = () => {
                                 </div>
                             );
                         })}
+                        {resultadoR.length === 0 && <p className={styles.semResultados}>Nenhum pedido encontrado.</p>}
                     </div>
                 </>
             )}
@@ -271,25 +343,26 @@ export const AdminGerenciarAgendas = () => {
                             <label>Data</label>
                             <input type="date" aria-label="Filtrar por data" value={filtroDataD} onChange={e => setFiltroDataD(e.target.value)} />
                         </div>
-                        <button type="button" className={styles.btnFiltrar} onClick={filtrarDoacoes}>Filtrar</button>
+                        <button type="button" className={styles.btnFiltrar} onClick={() => { setResultadoD(filtrarD(doacoes)); setExpandido(null); }}>Filtrar</button>
                     </div>
 
                     <div className={styles.lista}>
                         {resultadoD.map(doacao => {
-                            const status = getStatus("d", doacao.id, doacao.status);
+                            const chave = `d-${doacao.id}`;
+                            const pendente = doacao.status === "pendente";
                             return (
-                                <div key={doacao.id} className={styles.card}>
-                                    <div className={styles.cardHeader} onClick={() => toggleCard(doacao.id)}>
+                                <div key={chave} className={styles.card}>
+                                    <div className={styles.cardHeader} onClick={() => toggleCard(chave)}>
                                         <div className={styles.cardHeaderInfo}>
                                             <strong>{doacao.doador}</strong>
-                                            <span>Previsto para {formatarData(doacao.dataProposta)} — {doacao.item}</span>
+                                            <span>{doacao.codigoAgendamento} · Previsto para {formatarData(doacao.dataProposta)} — {doacao.item}</span>
                                         </div>
-                                        <span className={`${styles.badge} ${badgeClass(status, styles)}`}>
-                                            {labelStatus(status)}
+                                        <span className={`${styles.badge} ${badgeClass(doacao.status, styles)}`}>
+                                            {labelStatus(doacao.status)}
                                         </span>
                                     </div>
 
-                                    {expandido === doacao.id && (
+                                    {expandido === chave && (
                                         <div className={styles.cardBody}>
                                             <div className={styles.dadosGrid}>
                                                 <p><strong>Nome:</strong> {doacao.doador}</p>
@@ -304,21 +377,43 @@ export const AdminGerenciarAgendas = () => {
                                                 <input
                                                     type="date"
                                                     aria-label="Data de entrega"
-                                                    disabled={status !== "pendente"}
-                                                    value={getDataAtual(doacao.id + 1000, doacao.dataProposta)}
-                                                    onChange={e => alterarData(doacao.id + 1000, e.target.value)}
+                                                    disabled={!pendente}
+                                                    value={datas[chave] ?? doacao.dataProposta}
+                                                    onChange={e => setDatas({ ...datas, [chave]: e.target.value })}
                                                 />
                                             </div>
 
+                                            {doacao.observacao && <p className={styles.motivo}><strong>Observação registrada:</strong> {doacao.observacao}</p>}
+                                            {pendente && campoObservacao(chave, "recusar")}
+                                            {erros[chave] && <p className={styles.msgErro}>{erros[chave]}</p>}
+
                                             <div className={styles.acoes}>
-                                                {status === "pendente" && (
+                                                {pendente && (
                                                     <>
-                                                        <button type="button" className={styles.btnAprovar} onClick={() => definirStatus("d", doacao.id, "aprovado")}>Confirmar Agendamento</button>
-                                                        <button type="button" className={styles.btnRecusar} onClick={() => definirStatus("d", doacao.id, "recusado")}>Recusar</button>
+                                                        <button
+                                                            type="button"
+                                                            className={styles.btnAprovar}
+                                                            onClick={() => executar(chave, () => aprovarDoacao(doacao.id, datas[chave] ?? doacao.dataProposta, observacoes[chave] ?? ""), `Doação ${doacao.codigoAgendamento} confirmada.`)}
+                                                        >
+                                                            Confirmar Agendamento
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className={styles.btnRecusar}
+                                                            onClick={() => executar(chave, () => recusarDoacao(doacao.id, observacoes[chave] ?? ""), `Doação ${doacao.codigoAgendamento} recusada.`)}
+                                                        >
+                                                            Recusar
+                                                        </button>
                                                     </>
                                                 )}
-                                                {(status === "aprovado" || status === "recusado") && (
-                                                    <button type="button" className={styles.btnReabrir} onClick={() => definirStatus("d", doacao.id, "pendente")}>Reabrir Solicitação</button>
+                                                {!pendente && (
+                                                    <button
+                                                        type="button"
+                                                        className={styles.btnReabrir}
+                                                        onClick={() => executar(chave, () => reabrirDoacao(doacao.id), `Doação ${doacao.codigoAgendamento} reaberta.`)}
+                                                    >
+                                                        Reabrir Solicitação
+                                                    </button>
                                                 )}
                                             </div>
                                         </div>
@@ -326,6 +421,7 @@ export const AdminGerenciarAgendas = () => {
                                 </div>
                             );
                         })}
+                        {resultadoD.length === 0 && <p className={styles.semResultados}>Nenhuma proposta encontrada.</p>}
                     </div>
                 </>
             )}

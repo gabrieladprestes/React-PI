@@ -8,7 +8,8 @@ import { IAdminCotaProduto } from "../../interfaces/adminAtendimento.interface";
 import { COTA_MENSAL_KG, calcularCotas } from "../../services/atendimento.service";
 import { buscarDonatarios } from "../../services/donatarios.service";
 import { buscarEstoque } from "../../services/estoque.service";
-import { buscarRetiradasDoMes } from "../../services/retiradas.service";
+import { buscarAprovadosDoMes, buscarRetiradasDoMes } from "../../services/retiradas.service";
+import { IAdminSolicitacaoItem } from "../../interfaces/adminSolicitacao.interface";
 import { disponivelParaLiberar, statusGeral } from "../../utils/estoqueUtils";
 import { formatarData } from "../../utils/dateUtils";
 
@@ -25,6 +26,7 @@ export function AdminAtendimento() {
     const [encontrados, setEncontrados] = useState<IAdminDonatario[] | null>(null);
     const [selecionado, setSelecionado] = useState<IAdminDonatario | null>(null);
     const [retiradasMes, setRetiradasMes] = useState<IAdminHistoricoRetirada[]>([]);
+    const [aprovadosMes, setAprovadosMes] = useState<IAdminSolicitacaoItem[]>([]);
     const [estoque, setEstoque] = useState<IAdminEstoque[]>([]);
 
     useEffect(() => {
@@ -34,6 +36,7 @@ export function AdminAtendimento() {
     async function selecionar(donatario: IAdminDonatario) {
         setSelecionado(donatario);
         setRetiradasMes(await buscarRetiradasDoMes(donatario.cpf));
+        setAprovadosMes(await buscarAprovadosDoMes(donatario.cpf));
     }
 
     async function pesquisar() {
@@ -44,7 +47,7 @@ export function AdminAtendimento() {
         if (lista.length === 1) await selecionar(lista[0]);
     }
 
-    const cotas = selecionado ? calcularCotas(selecionado.pets, retiradasMes, estoque) : [];
+    const cotas = selecionado ? calcularCotas(selecionado.pets, retiradasMes, aprovadosMes, estoque) : [];
     const totalRetirado = retiradasMes.flatMap(r => r.itens).reduce((acc, i) => acc + i.quantidade, 0);
 
     return (
@@ -165,6 +168,7 @@ export function AdminAtendimento() {
                                         <th>Produto</th>
                                         <th>Cota do mês</th>
                                         <th>Retirado</th>
+                                        <th>Aprovado a retirar</th>
                                         <th>Saldo da cota</th>
                                         <th>Disponível em estoque</th>
                                         <th>Status</th>
@@ -178,6 +182,7 @@ export function AdminAtendimento() {
                                                 <td>{cota.nome}</td>
                                                 <td>{cota.cotaMensal} kg</td>
                                                 <td>{cota.retiradoMes} kg</td>
+                                                <td>{cota.aprovadoMes} kg</td>
                                                 <td>{cota.saldoCota} kg</td>
                                                 <td>{cota.disponivelEstoque} kg</td>
                                                 <td><span className={`${styles.badge} ${status.classe}`}>{status.texto}</span></td>

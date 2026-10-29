@@ -290,3 +290,71 @@
 }
 
 .btnReabrir:hover { background: #5a6268; }
+
+/* Decisões gravadas: observação, avisos e mensagens */
+.observacao {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+}
+.observacao label {
+    color: #555;
+    font-weight: 500;
+}
+.observacao textarea {
+    width: 100%;
+    min-height: 60px;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    resize: vertical;
+    box-sizing: border-box;
+}
+.aviso {
+    background: #fff8e1;
+    color: #7a5b00;
+    border: 1px solid #f3dc8f;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.84rem;
+    margin: 0 0 12px;
+}
+.motivo {
+    font-size: 0.85rem;
+    color: #444;
+    background: white;
+    border-left: 3px solid #348888;
+    padding: 6px 10px;
+    margin: 0 0 12px;
+}
+.msgErro {
+    background: #fdecea;
+    color: #b42318;
+    border: 1px solid #f5c2c0;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    margin: 0 0 8px;
+}
+.msgSucesso {
+    background: #e7f6ef;
+    color: #1b6b4a;
+    border: 1px solid #b7e2cd;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+}
+.semResultados {
+    text-align: center;
+    color: #888;
+    padding: 20px;
+}
+.btnAprovar:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}

@@ -1,7 +1,7 @@
 import { IAdminAgendaDoacao } from "../interfaces/adminAgendaDoacao.interface";
 import { IAdminDoacaoAgendada } from "../interfaces/adminDoacaoAgendada.interface";
 import { IAdminHistoricoDoacao } from "../interfaces/adminHistoricoDoacao.interface";
-import { IAdminItemRecebido } from "../interfaces/adminSolicitacao.interface";
+import { IAdminItemRecebido, IAdminSolicitacaoDoacao } from "../interfaces/adminSolicitacao.interface";
 import { mockHistoricoDoacoes, mockSolicitacoesDoacao } from "./mocks/doacoes.mock";
 import { doadorPorId } from "./mocks/doadores.mock";
 import { produtoPorCodigo } from "./mocks/produtos.mock";
@@ -29,6 +29,8 @@ export async function buscarSolicitacoesDoacao(): Promise<IAdminAgendaDoacao[]> 
                 quantidade: s.quantidade,
                 dataProposta: s.dataProposta,
                 status: s.status as IAdminAgendaDoacao["status"],
+                codigoAgendamento: s.codigoAgendamento,
+                observacao: s.observacao,
             };
         });
 }
@@ -124,4 +126,34 @@ export async function recusarRecebimento(id: number, motivo: string) {
     if (!motivo.trim()) throw new Error("Informe o motivo da recusa no campo Observações.");
     doacao.status = "recusado";
     doacao.observacao = motivo.trim();
+}
+
+// ---- Gerenciar Agendas ----
+
+function proposta(id: number, statusEsperado: IAdminSolicitacaoDoacao["status"][]) {
+    const s = mockSolicitacoesDoacao.find(x => x.id === id);
+    if (!s || !statusEsperado.includes(s.status)) throw new Error("Esta proposta foi alterada. Atualize a página.");
+    return s;
+}
+
+export async function aprovarDoacao(id: number, dataProposta: string, observacao: string) {
+    const s = proposta(id, ["pendente"]);
+    if (!dataProposta) throw new Error("Informe a data de entrega.");
+    if (dataProposta < getTodayDate()) throw new Error("A data de entrega não pode estar no passado.");
+    s.dataProposta = dataProposta;
+    s.status = "aprovado";
+    s.observacao = observacao.trim() || undefined;
+}
+
+// Recusa: exige motivo (fica registrado para auditoria)
+export async function recusarDoacao(id: number, motivo: string) {
+    const s = proposta(id, ["pendente"]);
+    if (!motivo.trim()) throw new Error("Informe o motivo da recusa.");
+    s.status = "recusado";
+    s.observacao = motivo.trim();
+}
+
+export async function reabrirDoacao(id: number) {
+    const s = proposta(id, ["aprovado", "recusado"]);
+    s.status = "pendente";
 }

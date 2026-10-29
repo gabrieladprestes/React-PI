@@ -7,4 +7,6 @@ export interface IAdminAgendaDoacao {
     quantidade: number;
     dataProposta: string;
     status: 'pendente' | 'aprovado' | 'recusado';
+    codigoAgendamento?: string;
+    observacao?: string;
 }

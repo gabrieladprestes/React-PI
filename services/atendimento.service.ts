@@ -2,6 +2,7 @@ import { EspeciePet, IAdminPet, PortePet } from "../interfaces/adminDonatario.in
 import { IAdminEstoque } from "../interfaces/adminEstoque.interface";
 import { IAdminHistoricoRetirada } from "../interfaces/adminHistoricoRetirada.interface";
 import { IAdminCotaProduto } from "../interfaces/adminAtendimento.interface";
+import { IAdminSolicitacaoItem } from "../interfaces/adminSolicitacao.interface";
 import { disponivelParaLiberar } from "../utils/estoqueUtils";
 
 // As buscas usadas pelo Atendimento ficam nos services de cada assunto:
@@ -19,9 +20,12 @@ export const PRODUTO_POR_ESPECIE: Record<EspeciePet, string> = {
     Gato: "RG001",
 };
 
+// Cota do mês por produto. Conta o que já foi entregue e o que já está aprovado
+// (ainda não entregue) no mesmo mês, para o donatário não passar da cota com vários pedidos.
 export function calcularCotas(
     pets: IAdminPet[],
     retiradasDoMes: IAdminHistoricoRetirada[],
+    aprovadosDoMes: IAdminSolicitacaoItem[],
     estoque: IAdminEstoque[],
 ): IAdminCotaProduto[] {
     const cotaPorProduto = new Map<string, number>();
@@ -36,7 +40,10 @@ export function calcularCotas(
             .flatMap(r => r.itens)
             .filter(i => i.codigo === codigo)
             .reduce((acc, i) => acc + i.quantidade, 0);
-        const saldoCota = Math.max(cotaMensal - retiradoMes, 0);
+        const aprovadoMes = aprovadosDoMes
+            .filter(i => i.codigoProduto === codigo)
+            .reduce((acc, i) => acc + i.quantidade, 0);
+        const saldoCota = Math.max(cotaMensal - retiradoMes - aprovadoMes, 0);
         const disponivelEstoque = produto ? disponivelParaLiberar(produto.lotes) : 0;
 
         return {
@@ -44,6 +51,7 @@ export function calcularCotas(
             nome: produto?.nome ?? codigo,
             cotaMensal,
             retiradoMes,
+            aprovadoMes,
             saldoCota,
             disponivelEstoque,
             liberado: Math.min(saldoCota, disponivelEstoque),
