@@ -1,14 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./AdminConsultaDonatario.module.css";
 import { IAdminDonatario } from "../../interfaces/adminDonatario.interface";
-import { mockDonatarios } from "../../services/mocks/donatarios.mock";
+import { listarDonatarios } from "../../services/donatarios.service";
 
 export function AdminConsultaDonatario() {
     const [busca, setBusca] = useState("");
     const [selecionado, setSelecionado] = useState<IAdminDonatario | null>(null);
+    const [donatarios, setDonatarios] = useState<IAdminDonatario[]>([]);
 
-    const lista = mockDonatarios.filter(d =>
+    useEffect(() => {
+        listarDonatarios().then(setDonatarios);
+    }, []);
+
+    const lista = donatarios.filter(d =>
         d.nome.toLowerCase().includes(busca.toLowerCase()) ||
         d.cpf.includes(busca)
     );

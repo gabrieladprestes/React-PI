@@ -1,54 +1,18 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./AdminGerenciarAgendas.module.css";
 import { IAdminAgenda } from "../../interfaces/adminAgenda.interface";
 import { IAdminAgendaDoacao } from "../../interfaces/adminAgendaDoacao.interface";
+import { buscarSolicitacoesRetirada } from "../../services/retiradas.service";
+import { buscarSolicitacoesDoacao } from "../../services/doacoes.service";
+import { formatarData } from "../../utils/dateUtils";
 
 // Saldo atual do estoque (em kg)
+// TODO (etapa 4): calcular a partir do estoque real (estoque.service) em vez de valores fixos
 const saldoEstoque: Record<string, number> = {
     "Ração de Cachorro": 45,
     "Ração de Gato": 8,
 };
-
-const mockRetiradas: IAdminAgenda[] = [
-    {
-        id: 1, donatario: "Maria Silva", cpf: "123.456.789-00", telefone: "(15) 99999-0001",
-        itensSolicitados: [
-            { item: "Ração de Cachorro", quantidade: 5 },
-            { item: "Ração de Gato", quantidade: 2 },
-        ],
-        dataSolicitacao: "2026-06-02", status: "pendente",
-    },
-    {
-        id: 2, donatario: "Carlos Souza", cpf: "111.222.333-44", telefone: "(15) 97777-0002",
-        itensSolicitados: [
-            { item: "Ração de Gato", quantidade: 3 },
-        ],
-        dataSolicitacao: "2026-06-03", status: "pendente",
-    },
-    {
-        id: 3, donatario: "Ana Lima", cpf: "555.666.777-88", telefone: "(15) 96666-0003",
-        itensSolicitados: [
-            { item: "Ração de Cachorro", quantidade: 4 },
-        ],
-        dataSolicitacao: "2026-06-04", status: "aprovado",
-    },
-    {
-        id: 4, donatario: "Pedro Alves", cpf: "444.555.666-77", telefone: "(15) 95555-0004",
-        itensSolicitados: [
-            { item: "Ração de Cachorro", quantidade: 2 },
-            { item: "Ração de Gato", quantidade: 1 },
-        ],
-        dataSolicitacao: "2026-06-05", status: "recusado",
-    },
-];
-
-const mockDoacoes: IAdminAgendaDoacao[] = [
-    { id: 1, doador: "João Pereira",          cpfCnpj: "987.654.321-00",       telefone: "(15) 98888-0002", item: "Ração de Cachorro", quantidade: 10, dataProposta: "2026-06-04", status: "pendente" },
-    { id: 2, doador: "Empresa Ração Certa",   cpfCnpj: "12.345.678/0001-99",   telefone: "(15) 3333-0001",  item: "Ração de Gato",     quantidade: 20, dataProposta: "2026-06-05", status: "pendente" },
-    { id: 3, doador: "Maria Oliveira",        cpfCnpj: "111.222.333-44",       telefone: "(15) 97777-0003", item: "Ração de Cachorro", quantidade: 5,  dataProposta: "2026-06-06", status: "aprovado" },
-    { id: 4, doador: "Supermercado BomPreço", cpfCnpj: "98.765.432/0001-11",   telefone: "(15) 4444-0010",  item: "Ração de Gato",     quantidade: 30, dataProposta: "2026-06-10", status: "pendente" },
-];
 
 function badgeClass(status: string, s: Record<string, string>) {
     if (status === "aprovado") return s.badgeAprovado;
@@ -70,13 +34,26 @@ export const AdminGerenciarAgendas = () => {
     const [filtroStatusR, setFiltroStatusR] = useState("");
     const [filtroNomeR, setFiltroNomeR] = useState("");
     const [filtroDataR, setFiltroDataR] = useState("");
-    const [resultadoR, setResultadoR] = useState<IAdminAgenda[]>(mockRetiradas);
+    const [retiradas, setRetiradas] = useState<IAdminAgenda[]>([]);
+    const [resultadoR, setResultadoR] = useState<IAdminAgenda[]>([]);
 
     // Filtros — doações
     const [filtroStatusD, setFiltroStatusD] = useState("");
     const [filtroNomeD, setFiltroNomeD] = useState("");
     const [filtroDataD, setFiltroDataD] = useState("");
-    const [resultadoD, setResultadoD] = useState<IAdminAgendaDoacao[]>(mockDoacoes);
+    const [doacoes, setDoacoes] = useState<IAdminAgendaDoacao[]>([]);
+    const [resultadoD, setResultadoD] = useState<IAdminAgendaDoacao[]>([]);
+
+    useEffect(() => {
+        buscarSolicitacoesRetirada().then(dados => {
+            setRetiradas(dados);
+            setResultadoR(dados);
+        });
+        buscarSolicitacoesDoacao().then(dados => {
+            setDoacoes(dados);
+            setResultadoD(dados);
+        });
+    }, []);
 
     // Datas alteradas pelo funcionário (por id do agendamento)
     const [datasAlteradas, setDatasAlteradas] = useState<Record<number, string>>({});
@@ -88,7 +65,7 @@ export const AdminGerenciarAgendas = () => {
     const [statusAlterados, setStatusAlterados] = useState<Record<string, string>>({});
 
     function filtrarRetiradas() {
-        setResultadoR(mockRetiradas.filter(r =>
+        setResultadoR(retiradas.filter(r =>
             (!filtroStatusR || r.status === filtroStatusR) &&
             (!filtroNomeR || r.donatario.toLowerCase().includes(filtroNomeR.toLowerCase())) &&
             (!filtroDataR || r.dataSolicitacao === filtroDataR)
@@ -97,7 +74,7 @@ export const AdminGerenciarAgendas = () => {
     }
 
     function filtrarDoacoes() {
-        setResultadoD(mockDoacoes.filter(d =>
+        setResultadoD(doacoes.filter(d =>
             (!filtroStatusD || d.status === filtroStatusD) &&
             (!filtroNomeD || d.doador.toLowerCase().includes(filtroNomeD.toLowerCase())) &&
             (!filtroDataD || d.dataProposta === filtroDataD)
@@ -189,7 +166,7 @@ export const AdminGerenciarAgendas = () => {
                                     <div className={styles.cardHeader} onClick={() => toggleCard(agenda.id)}>
                                         <div className={styles.cardHeaderInfo}>
                                             <strong>{agenda.donatario}</strong>
-                                            <span>Solicitado em {new Date(agenda.dataSolicitacao).toLocaleDateString("pt-BR")} — {resumo}</span>
+                                            <span>Solicitado em {formatarData(agenda.dataSolicitacao)} — {resumo}</span>
                                         </div>
                                         <span className={`${styles.badge} ${badgeClass(status, styles)}`}>
                                             {labelStatus(status)}
@@ -249,7 +226,7 @@ export const AdminGerenciarAgendas = () => {
                                                     type="date"
                                                     aria-label="Data de retirada"
                                                     disabled={status !== "pendente"}
-                                                    value={getDataAtual(agenda.id, agenda.dataSolicitacao)}
+                                                    value={getDataAtual(agenda.id, agenda.dataAgendada)}
                                                     onChange={e => alterarData(agenda.id, e.target.value)}
                                                 />
                                             </div>
@@ -305,7 +282,7 @@ export const AdminGerenciarAgendas = () => {
                                     <div className={styles.cardHeader} onClick={() => toggleCard(doacao.id)}>
                                         <div className={styles.cardHeaderInfo}>
                                             <strong>{doacao.doador}</strong>
-                                            <span>Previsto para {new Date(doacao.dataProposta).toLocaleDateString("pt-BR")} — {doacao.item}</span>
+                                            <span>Previsto para {formatarData(doacao.dataProposta)} — {doacao.item}</span>
                                         </div>
                                         <span className={`${styles.badge} ${badgeClass(status, styles)}`}>
                                             {labelStatus(status)}

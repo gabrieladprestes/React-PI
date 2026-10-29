@@ -1,30 +1,25 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./AdminSaidaDoacao.module.css";
 import { IAdminSaidaDoacao } from "../../interfaces/adminSaidaDoacao.interface";
-
-const mockSaidas: IAdminSaidaDoacao[] = [
-    { id: 1,  codigoAgendamento: "RET-2026-001", nomeDonatario: "Beatriz Lima",      cpf: "123.456.789-01", telefone: "(15) 98765-0001", itens: [{ item: "Ração de Cachorro", quantidadeSolicitada: 5,  quantidadeEntregue: 5  }], dataAgendada: "2026-06-01", status: "aguardando" },
-    { id: 2,  codigoAgendamento: "RET-2026-002", nomeDonatario: "Marcos Souza",      cpf: "234.567.890-12", telefone: "(15) 97654-0002", itens: [{ item: "Ração de Gato",     quantidadeSolicitada: 3,  quantidadeEntregue: 3  }], dataAgendada: "2026-06-02", status: "aguardando" },
-    { id: 3,  codigoAgendamento: "RET-2026-003", nomeDonatario: "Luciana Ferreira",  cpf: "345.678.901-23", telefone: "(15) 98877-0003", itens: [{ item: "Ração de Cachorro", quantidadeSolicitada: 8,  quantidadeEntregue: 8  }, { item: "Ração de Gato", quantidadeSolicitada: 2, quantidadeEntregue: 2 }], dataAgendada: "2026-06-03", status: "aguardando" },
-    { id: 4,  codigoAgendamento: "RET-2026-004", nomeDonatario: "Paulo Henrique",    cpf: "456.789.012-34", telefone: "(15) 96543-0004", itens: [{ item: "Ração de Cachorro", quantidadeSolicitada: 10, quantidadeEntregue: 10 }], dataAgendada: "2026-06-05", status: "aguardando" },
-    { id: 5,  codigoAgendamento: "RET-2026-005", nomeDonatario: "Cristina Almeida",  cpf: "567.890.123-45", telefone: "(15) 99001-0005", itens: [{ item: "Ração de Gato",     quantidadeSolicitada: 5,  quantidadeEntregue: 5  }], dataAgendada: "2026-06-08", status: "aguardando" },
-    { id: 6,  codigoAgendamento: "RET-2026-006", nomeDonatario: "Diego Nascimento",  cpf: "678.901.234-56", telefone: "(15) 98112-0006", itens: [{ item: "Ração de Cachorro", quantidadeSolicitada: 6,  quantidadeEntregue: 6  }, { item: "Ração de Gato", quantidadeSolicitada: 4, quantidadeEntregue: 4 }], dataAgendada: "2026-06-10", status: "aguardando" },
-    { id: 7,  codigoAgendamento: "RET-2026-007", nomeDonatario: "Simone Martins",    cpf: "789.012.345-67", telefone: "(15) 97223-0007", itens: [{ item: "Ração de Cachorro", quantidadeSolicitada: 4,  quantidadeEntregue: 4  }], dataAgendada: "2026-06-12", status: "aguardando" },
-    { id: 8,  codigoAgendamento: "RET-2026-008", nomeDonatario: "Tadeu Ribeiro",     cpf: "890.123.456-78", telefone: "(15) 98334-0008", itens: [{ item: "Ração de Gato",     quantidadeSolicitada: 7,  quantidadeEntregue: 7  }], dataAgendada: "2026-06-15", status: "aguardando" },
-    { id: 9,  codigoAgendamento: "RET-2026-009", nomeDonatario: "Vanessa Rocha",     cpf: "901.234.567-89", telefone: "(15) 96445-0009", itens: [{ item: "Ração de Cachorro", quantidadeSolicitada: 12, quantidadeEntregue: 12 }, { item: "Ração de Gato", quantidadeSolicitada: 3, quantidadeEntregue: 3 }], dataAgendada: "2026-06-18", status: "aguardando" },
-    { id: 10, codigoAgendamento: "RET-2026-010", nomeDonatario: "Eduardo Campos",    cpf: "012.345.678-90", telefone: "(15) 99556-0010", itens: [{ item: "Ração de Cachorro", quantidadeSolicitada: 9,  quantidadeEntregue: 9  }], dataAgendada: "2026-06-20", status: "aguardando" },
-];
-
-const saidasPendentes = mockSaidas.filter(s => s.status === "aguardando");
+import { buscarSaidasPendentes } from "../../services/retiradas.service";
+import { formatarData } from "../../utils/dateUtils";
 
 export function AdminSaidaDoacao() {
     const [selecionada, setSelecionada] = useState<IAdminSaidaDoacao | null>(null);
     const [observacao, setObservacao] = useState("");
     const [filtroData, setFiltroData] = useState("");
     const [filtroDonatario, setFiltroDonatario] = useState("");
-    const [resultado, setResultado] = useState<IAdminSaidaDoacao[]>(saidasPendentes);
+    const [saidasPendentes, setSaidasPendentes] = useState<IAdminSaidaDoacao[]>([]);
+    const [resultado, setResultado] = useState<IAdminSaidaDoacao[]>([]);
     const [quantidadesEntregues, setQuantidadesEntregues] = useState<number[]>([]);
+
+    useEffect(() => {
+        buscarSaidasPendentes().then(dados => {
+            setSaidasPendentes(dados);
+            setResultado(dados);
+        });
+    }, []);
 
     function filtrar() {
         setResultado(saidasPendentes.filter(s =>
@@ -93,7 +88,7 @@ export function AdminSaidaDoacao() {
                             <td>{saida.codigoAgendamento}</td>
                             <td>{saida.nomeDonatario}</td>
                             <td>{resumoItens(saida)}</td>
-                            <td>{new Date(saida.dataAgendada).toLocaleDateString("pt-BR")}</td>
+                            <td>{formatarData(saida.dataAgendada)}</td>
                         </tr>
                     ))}
                 </tbody>
@@ -126,7 +121,7 @@ export function AdminSaidaDoacao() {
                             </div>
                             <div className={styles.campo}>
                                 <span>Data agendada</span>
-                                <span>{new Date(selecionada.dataAgendada).toLocaleDateString("pt-BR")}</span>
+                                <span>{formatarData(selecionada.dataAgendada)}</span>
                             </div>
 
                             <p className={styles.itensLabel}>Itens para entrega</p>

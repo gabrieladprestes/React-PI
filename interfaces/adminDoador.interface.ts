@@ -1,4 +1,5 @@
-export interface IAdminHistoricoDoacao {
+// Doação resumida mostrada na ficha do doador
+export interface IAdminDoadorDoacao {
     id: number;
     tipo: string;
     quantidade: number;
@@ -12,5 +13,5 @@ export interface IAdminDoador {
     telefone: string;
     endereco: string;
     foto?: string;
-    historicoDoacoes: IAdminHistoricoDoacao[];
+    historicoDoacoes: IAdminDoadorDoacao[];
 }

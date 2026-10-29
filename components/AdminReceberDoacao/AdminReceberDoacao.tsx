@@ -1,7 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./AdminReceberDoacao.module.css";
 import { IAdminDoacaoAgendada } from "../../interfaces/adminDoacaoAgendada.interface";
+import { buscarDoacoesAgendadas } from "../../services/doacoes.service";
+import { formatarData } from "../../utils/dateUtils";
 
 interface IItemExtra {
     item: string;
@@ -10,27 +12,13 @@ interface IItemExtra {
 
 const TIPOS_ITEM = ["Ração de Cachorro", "Ração de Gato"];
 
-const mockDoacoes: IAdminDoacaoAgendada[] = [
-    { id: 1,  codigoAgendamento: "AG-2026-001", nomeDoador: "João Pereira",               cpfCnpj: "987.654.321-00",      telefone: "(15) 98888-0002", item: "Ração de Cachorro", quantidade: 10, dataAgendada: "2026-05-28", status: "agendado" },
-    { id: 2,  codigoAgendamento: "AG-2026-002", nomeDoador: "Empresa Ração Certa Ltda",   cpfCnpj: "12.345.678/0001-99",  telefone: "(15) 3333-0001", item: "Ração de Gato",     quantidade: 20, dataAgendada: "2026-05-30", status: "agendado" },
-    { id: 3,  codigoAgendamento: "AG-2026-003", nomeDoador: "Maria Oliveira",              cpfCnpj: "111.222.333-44",      telefone: "(15) 97777-0003", item: "Ração de Cachorro", quantidade: 5,  dataAgendada: "2026-06-10", status: "agendado" },
-    { id: 4,  codigoAgendamento: "AG-2026-004", nomeDoador: "Carlos Mendes",               cpfCnpj: "222.333.444-55",      telefone: "(15) 99111-2233", item: "Ração de Gato",     quantidade: 8,  dataAgendada: "2026-06-12", status: "agendado" },
-    { id: 5,  codigoAgendamento: "AG-2026-005", nomeDoador: "PetShop Amigo Fiel Ltda",    cpfCnpj: "98.765.432/0001-10",  telefone: "(15) 3210-5500", item: "Ração de Cachorro", quantidade: 50, dataAgendada: "2026-06-15", status: "agendado" },
-    { id: 6,  codigoAgendamento: "AG-2026-006", nomeDoador: "Ana Paula Santos",            cpfCnpj: "333.444.555-66",      telefone: "(15) 98765-4321", item: "Ração de Gato",     quantidade: 12, dataAgendada: "2026-06-18", status: "agendado" },
-    { id: 7,  codigoAgendamento: "AG-2026-007", nomeDoador: "Supermercado Bom Preço Ltda",cpfCnpj: "11.222.333/0001-44",  telefone: "(15) 3344-5566", item: "Ração de Cachorro", quantidade: 30, dataAgendada: "2026-06-20", status: "agendado" },
-    { id: 8,  codigoAgendamento: "AG-2026-008", nomeDoador: "Roberto Alves",               cpfCnpj: "444.555.666-77",      telefone: "(15) 97654-3210", item: "Ração de Gato",     quantidade: 6,  dataAgendada: "2026-06-22", status: "agendado" },
-    { id: 9,  codigoAgendamento: "AG-2026-009", nomeDoador: "Fernanda Costa",              cpfCnpj: "555.666.777-88",      telefone: "(15) 99887-6655", item: "Ração de Cachorro", quantidade: 15, dataAgendada: "2026-06-25", status: "agendado" },
-    { id: 10, codigoAgendamento: "AG-2026-010", nomeDoador: "Distribuidora AnimalVida SA", cpfCnpj: "55.444.333/0001-22",  telefone: "(15) 3456-7890", item: "Ração de Gato",     quantidade: 40, dataAgendada: "2026-07-02", status: "agendado" },
-];
-
-const doacoesPendentes = mockDoacoes.filter(d => d.status === "agendado");
-
 export function AdminReceberDoacao() {
     const [selecionada, setSelecionada] = useState<IAdminDoacaoAgendada | null>(null);
     const [observacao, setObservacao] = useState("");
     const [filtroData, setFiltroData] = useState("");
     const [filtroDoador, setFiltroDoador] = useState("");
-    const [resultado, setResultado] = useState<IAdminDoacaoAgendada[]>(doacoesPendentes);
+    const [doacoesPendentes, setDoacoesPendentes] = useState<IAdminDoacaoAgendada[]>([]);
+    const [resultado, setResultado] = useState<IAdminDoacaoAgendada[]>([]);
 
     // Estado do modal — itens editáveis
     const [quantidadeEditada, setQuantidadeEditada] = useState(0);
@@ -40,6 +28,13 @@ export function AdminReceberDoacao() {
     const [mostrarAddItem, setMostrarAddItem] = useState(false);
     const [itemPrincipalRemovido, setItemPrincipalRemovido] = useState(false);
     const [loteEditado, setLoteEditado] = useState("");
+
+    useEffect(() => {
+        buscarDoacoesAgendadas().then(dados => {
+            setDoacoesPendentes(dados);
+            setResultado(dados);
+        });
+    }, []);
 
     const filtrar = () => {
         setResultado(doacoesPendentes.filter(d =>
@@ -107,7 +102,7 @@ export function AdminReceberDoacao() {
                             <td>{doacao.nomeDoador}</td>
                             <td>{doacao.item}</td>
                             <td>{doacao.quantidade}</td>
-                            <td>{new Date(doacao.dataAgendada).toLocaleDateString("pt-BR")}</td>
+                            <td>{formatarData(doacao.dataAgendada)}</td>
                         </tr>
                     ))}
                 </tbody>
@@ -140,7 +135,7 @@ export function AdminReceberDoacao() {
                             </div>
                             <div className={styles.campo}>
                                 <span>Data agendada</span>
-                                <span>{new Date(selecionada.dataAgendada).toLocaleDateString("pt-BR")}</span>
+                                <span>{formatarData(selecionada.dataAgendada)}</span>
                             </div>
                             {/* Seção de itens */}
                             <p className={styles.itensLabel}>Itens do recebimento</p>

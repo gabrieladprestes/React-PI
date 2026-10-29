@@ -1,12 +1,11 @@
-import { EspeciePet, IAdminDonatario, IAdminPet, PortePet } from "../interfaces/adminDonatario.interface";
+import { EspeciePet, IAdminPet, PortePet } from "../interfaces/adminDonatario.interface";
 import { IAdminEstoque } from "../interfaces/adminEstoque.interface";
 import { IAdminHistoricoRetirada } from "../interfaces/adminHistoricoRetirada.interface";
 import { IAdminCotaProduto } from "../interfaces/adminAtendimento.interface";
-import { mockDonatarios } from "./mocks/donatarios.mock";
-import { mockEstoque } from "./mocks/estoque.mock";
-import { mockRetiradas } from "./mocks/retiradas.mock";
-import { ehMesAtual } from "../utils/dateUtils";
 import { disponivelParaLiberar } from "../utils/estoqueUtils";
+
+// As buscas usadas pelo Atendimento ficam nos services de cada assunto:
+// donatarios.service.ts, estoque.service.ts e retiradas.service.ts
 
 // Regra provisória de cota (kg por mês) até a regra oficial ser definida
 export const COTA_MENSAL_KG: Record<EspeciePet, Record<PortePet, number>> = {
@@ -19,28 +18,6 @@ export const PRODUTO_POR_ESPECIE: Record<EspeciePet, string> = {
     Cachorro: "RC001",
     Gato: "RG001",
 };
-
-const somenteDigitos = (texto: string) => texto.replace(/\D/g, "");
-
-// As funções abaixo leem dos mocks. Quando a API existir, basta trocar o corpo por um fetch.
-
-export async function buscarDonatarios(termo: string): Promise<IAdminDonatario[]> {
-    const nome = termo.trim().toLowerCase();
-    const cpf = somenteDigitos(termo);
-    if (!nome) return [];
-    return mockDonatarios.filter(d =>
-        d.nome.toLowerCase().includes(nome) ||
-        (cpf.length > 0 && somenteDigitos(d.cpf).includes(cpf))
-    );
-}
-
-export async function buscarEstoque(): Promise<IAdminEstoque[]> {
-    return mockEstoque;
-}
-
-export async function buscarRetiradasDoMes(cpf: string): Promise<IAdminHistoricoRetirada[]> {
-    return mockRetiradas.filter(r => r.cpf === cpf && ehMesAtual(r.dataRetirada));
-}
 
 export function calcularCotas(
     pets: IAdminPet[],

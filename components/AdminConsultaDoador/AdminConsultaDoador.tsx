@@ -1,45 +1,20 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./AdminConsultaDoador.module.css";
 import { IAdminDoador } from "../../interfaces/adminDoador.interface";
-
-const mockDoadores: IAdminDoador[] = [
-    {
-        id: 1,
-        nome: "João Pereira",
-        cpfCnpj: "987.654.321-00",
-        telefone: "(15) 98888-0002",
-        endereco: "Av. Principal, 456 — Votorantim/SP",
-        historicoDoacoes: [
-            { id: 1, tipo: "Ração de Cachorro", quantidade: 10, data: "2026-03-10" },
-            { id: 2, tipo: "Ração de Gato", quantidade: 5, data: "2026-04-22" },
-        ],
-    },
-    {
-        id: 2,
-        nome: "Empresa XYZ Ltda",
-        cpfCnpj: "12.345.678/0001-99",
-        telefone: "(15) 3333-0010",
-        endereco: "Rua Industrial, 100 — Votorantim/SP",
-        historicoDoacoes: [
-            { id: 3, tipo: "Ração de Cachorro", quantidade: 50, data: "2026-05-01" },
-        ],
-    },
-    {
-        id: 3,
-        nome: "Carla Souza",
-        cpfCnpj: "222.333.444-55",
-        telefone: "(15) 96666-0004",
-        endereco: "Rua das Palmeiras, 321 — Votorantim/SP",
-        historicoDoacoes: [],
-    },
-];
+import { listarDoadores } from "../../services/doadores.service";
+import { formatarData } from "../../utils/dateUtils";
 
 export function AdminConsultaDoador() {
     const [busca, setBusca] = useState("");
     const [selecionado, setSelecionado] = useState<IAdminDoador | null>(null);
+    const [doadores, setDoadores] = useState<IAdminDoador[]>([]);
 
-    const lista = mockDoadores.filter(d =>
+    useEffect(() => {
+        listarDoadores().then(setDoadores);
+    }, []);
+
+    const lista = doadores.filter(d =>
         d.nome.toLowerCase().includes(busca.toLowerCase()) ||
         d.cpfCnpj.includes(busca)
     );
@@ -126,7 +101,7 @@ export function AdminConsultaDoador() {
                                                 <tr key={h.id}>
                                                     <td>{h.tipo}</td>
                                                     <td>{h.quantidade}</td>
-                                                    <td>{new Date(h.data).toLocaleDateString("pt-BR")}</td>
+                                                    <td>{formatarData(h.data)}</td>
                                                 </tr>
                                             ))}
                                         </tbody>

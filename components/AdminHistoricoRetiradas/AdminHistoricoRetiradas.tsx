@@ -1,22 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./AdminHistoricoRetiradas.module.css";
 import { IAdminHistoricoRetirada } from "../../interfaces/adminHistoricoRetirada.interface";
 import { IAdminHistoricoDoacao } from "../../interfaces/adminHistoricoDoacao.interface";
-import { mockRetiradas } from "../../services/mocks/retiradas.mock";
-
-const mockDoacoes: IAdminHistoricoDoacao[] = [
-    { id: 1,  codigoAgendamento: "AG-2026-001", doador: "João Pereira",                cpfCnpj: "987.654.321-00",     itens: [{ codigo: "RC001", nome: "Ração de Cachorro", tipo: "Ração",   lote: "L001", quantidade: 10 }], dataRecebimento: "2026-01-10", responsavel: "Ana Paula"  },
-    { id: 2,  codigoAgendamento: "AG-2026-002", doador: "Empresa Ração Certa Ltda",    cpfCnpj: "12.345.678/0001-99", itens: [{ codigo: "RG001", nome: "Ração de Gato",     tipo: "Ração",   lote: "L004", quantidade: 20 }], dataRecebimento: "2026-01-25", responsavel: "João Carlos" },
-    { id: 3,  codigoAgendamento: "AG-2026-003", doador: "Maria Oliveira",              cpfCnpj: "111.222.333-44",     itens: [{ codigo: "RC001", nome: "Ração de Cachorro", tipo: "Ração",   lote: "L001", quantidade: 5  }], dataRecebimento: "2026-02-08", responsavel: "Ana Paula"  },
-    { id: 4,  codigoAgendamento: "AG-2026-004", doador: "Carlos Mendes",               cpfCnpj: "222.333.444-55",     itens: [{ codigo: "RG001", nome: "Ração de Gato",     tipo: "Ração",   lote: "L005", quantidade: 8  }], dataRecebimento: "2026-02-20", responsavel: "João Carlos" },
-    { id: 5,  codigoAgendamento: "AG-2026-005", doador: "PetShop Amigo Fiel Ltda",     cpfCnpj: "98.765.432/0001-10", itens: [{ codigo: "RC001", nome: "Ração de Cachorro", tipo: "Ração",   lote: "L002", quantidade: 50 }], dataRecebimento: "2026-03-05", responsavel: "Ana Paula"  },
-    { id: 6,  codigoAgendamento: "AG-2026-006", doador: "Ana Paula Santos",            cpfCnpj: "333.444.555-66",     itens: [{ codigo: "RG001", nome: "Ração de Gato",     tipo: "Ração",   lote: "L004", quantidade: 12 }], dataRecebimento: "2026-03-18", responsavel: "João Carlos" },
-    { id: 7,  codigoAgendamento: "AG-2026-007", doador: "Supermercado Bom Preço Ltda", cpfCnpj: "11.222.333/0001-44", itens: [{ codigo: "RC001", nome: "Ração de Cachorro", tipo: "Ração",   lote: "L002", quantidade: 30 }, { codigo: "PC001", nome: "Petisco Cachorro", tipo: "Petisco", lote: "P001", quantidade: 8 }], dataRecebimento: "2026-04-02", responsavel: "Ana Paula"  },
-    { id: 8,  codigoAgendamento: "AG-2026-008", doador: "Roberto Alves",               cpfCnpj: "444.555.666-77",     itens: [{ codigo: "RG001", nome: "Ração de Gato",     tipo: "Ração",   lote: "L005", quantidade: 6  }], dataRecebimento: "2026-04-15", responsavel: "João Carlos" },
-    { id: 9,  codigoAgendamento: "AG-2026-009", doador: "Fernanda Costa",              cpfCnpj: "555.666.777-88",     itens: [{ codigo: "RC001", nome: "Ração de Cachorro", tipo: "Ração",   lote: "L003", quantidade: 15 }], dataRecebimento: "2026-05-01", responsavel: "Ana Paula"  },
-    { id: 10, codigoAgendamento: "AG-2026-010", doador: "Distribuidora AnimalVida SA", cpfCnpj: "55.444.333/0001-22", itens: [{ codigo: "RG001", nome: "Ração de Gato",     tipo: "Ração",   lote: "L004", quantidade: 40 }, { codigo: "PC001", nome: "Petisco Cachorro", tipo: "Petisco", lote: "P001", quantidade: 7 }], dataRecebimento: "2026-05-20", responsavel: "João Carlos" },
-];
+import { buscarHistoricoRetiradas } from "../../services/retiradas.service";
+import { buscarHistoricoDoacoes } from "../../services/doacoes.service";
+import { formatarData } from "../../utils/dateUtils";
 
 function resumoItens(itens: { nome: string; quantidade: number }[]) {
     return itens.map(i => `${i.nome} (${i.quantidade} kg)`).join(", ");
@@ -29,18 +18,31 @@ export const AdminHistoricoRetiradas = () => {
     const [dataInicioR, setDataInicioR] = useState("");
     const [dataFimR, setDataFimR] = useState("");
     const [buscaR, setBuscaR] = useState("");
-    const [resultadoR, setResultadoR] = useState<IAdminHistoricoRetirada[]>(mockRetiradas);
+    const [retiradas, setRetiradas] = useState<IAdminHistoricoRetirada[]>([]);
+    const [resultadoR, setResultadoR] = useState<IAdminHistoricoRetirada[]>([]);
     const [retiradaSelecionada, setRetiradaSelecionada] = useState<IAdminHistoricoRetirada | null>(null);
 
     // Filtros — doações
     const [dataInicioD, setDataInicioD] = useState("");
     const [dataFimD, setDataFimD] = useState("");
     const [buscaD, setBuscaD] = useState("");
-    const [resultadoD, setResultadoD] = useState<IAdminHistoricoDoacao[]>(mockDoacoes);
+    const [doacoes, setDoacoes] = useState<IAdminHistoricoDoacao[]>([]);
+    const [resultadoD, setResultadoD] = useState<IAdminHistoricoDoacao[]>([]);
     const [doacaoSelecionada, setDoacaoSelecionada] = useState<IAdminHistoricoDoacao | null>(null);
 
+    useEffect(() => {
+        buscarHistoricoRetiradas().then(dados => {
+            setRetiradas(dados);
+            setResultadoR(dados);
+        });
+        buscarHistoricoDoacoes().then(dados => {
+            setDoacoes(dados);
+            setResultadoD(dados);
+        });
+    }, []);
+
     function filtrarRetiradas() {
-        setResultadoR(mockRetiradas.filter(r =>
+        setResultadoR(retiradas.filter(r =>
             (!dataInicioR || r.dataRetirada >= dataInicioR) &&
             (!dataFimR    || r.dataRetirada <= dataFimR) &&
             (!buscaR      || r.donatario.toLowerCase().includes(buscaR.toLowerCase()))
@@ -48,7 +50,7 @@ export const AdminHistoricoRetiradas = () => {
     }
 
     function filtrarDoacoes() {
-        setResultadoD(mockDoacoes.filter(d =>
+        setResultadoD(doacoes.filter(d =>
             (!dataInicioD || d.dataRecebimento >= dataInicioD) &&
             (!dataFimD    || d.dataRecebimento <= dataFimD) &&
             (!buscaD      || d.doador.toLowerCase().includes(buscaD.toLowerCase()))
@@ -116,7 +118,7 @@ export const AdminHistoricoRetiradas = () => {
                                     <td>{r.donatario}</td>
                                     <td>{r.cpf}</td>
                                     <td className={styles.tdItens}>{resumoItens(r.itens)}</td>
-                                    <td>{new Date(r.dataRetirada).toLocaleDateString("pt-BR")}</td>
+                                    <td>{formatarData(r.dataRetirada)}</td>
                                     <td>{r.responsavel}</td>
                                     <td>
                                         <button
@@ -176,7 +178,7 @@ export const AdminHistoricoRetiradas = () => {
                                     <td>{d.doador}</td>
                                     <td>{d.cpfCnpj}</td>
                                     <td className={styles.tdItens}>{resumoItens(d.itens)}</td>
-                                    <td>{new Date(d.dataRecebimento).toLocaleDateString("pt-BR")}</td>
+                                    <td>{formatarData(d.dataRecebimento)}</td>
                                     <td>{d.responsavel}</td>
                                     <td>
                                         <button
@@ -208,7 +210,7 @@ export const AdminHistoricoRetiradas = () => {
                         <div className={styles.modalBody}>
                             <div className={styles.modalInfo}>
                                 <span><strong>CPF:</strong> {retiradaSelecionada.cpf}</span>
-                                <span><strong>Data:</strong> {new Date(retiradaSelecionada.dataRetirada).toLocaleDateString("pt-BR")}</span>
+                                <span><strong>Data:</strong> {formatarData(retiradaSelecionada.dataRetirada)}</span>
                                 <span><strong>Responsável:</strong> {retiradaSelecionada.responsavel}</span>
                             </div>
                             <table className={styles.tabelaDetalhe}>
@@ -252,7 +254,7 @@ export const AdminHistoricoRetiradas = () => {
                         <div className={styles.modalBody}>
                             <div className={styles.modalInfo}>
                                 <span><strong>CPF / CNPJ:</strong> {doacaoSelecionada.cpfCnpj}</span>
-                                <span><strong>Data:</strong> {new Date(doacaoSelecionada.dataRecebimento).toLocaleDateString("pt-BR")}</span>
+                                <span><strong>Data:</strong> {formatarData(doacaoSelecionada.dataRecebimento)}</span>
                                 <span><strong>Responsável:</strong> {doacaoSelecionada.responsavel}</span>
                             </div>
                             <table className={styles.tabelaDetalhe}>

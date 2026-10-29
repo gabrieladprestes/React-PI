@@ -5,13 +5,10 @@ import { IAdminDonatario } from "../../interfaces/adminDonatario.interface";
 import { IAdminEstoque } from "../../interfaces/adminEstoque.interface";
 import { IAdminHistoricoRetirada } from "../../interfaces/adminHistoricoRetirada.interface";
 import { IAdminCotaProduto } from "../../interfaces/adminAtendimento.interface";
-import {
-    COTA_MENSAL_KG,
-    buscarDonatarios,
-    buscarEstoque,
-    buscarRetiradasDoMes,
-    calcularCotas,
-} from "../../services/atendimento.service";
+import { COTA_MENSAL_KG, calcularCotas } from "../../services/atendimento.service";
+import { buscarDonatarios } from "../../services/donatarios.service";
+import { buscarEstoque } from "../../services/estoque.service";
+import { buscarRetiradasDoMes } from "../../services/retiradas.service";
 import { disponivelParaLiberar, statusGeral } from "../../utils/estoqueUtils";
 import { formatarData } from "../../utils/dateUtils";
 

@@ -1,11 +1,10 @@
 import { IAdminEstoqueLote } from "../interfaces/adminEstoque.interface";
+import { diasAte } from "./dateUtils";
 
 export type StatusValidade = "vencido" | "vencendo" | "bom";
 
 export function statusValidade(validade: string): StatusValidade {
-    const hoje = new Date();
-    const dataVal = new Date(validade);
-    const diffDias = Math.floor((dataVal.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+    const diffDias = diasAte(validade);
     if (diffDias < 0) return "vencido";
     if (diffDias <= 30) return "vencendo";
     return "bom";
