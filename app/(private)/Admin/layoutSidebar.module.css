@@ -263,6 +263,20 @@
 
     .content {
         padding: 20px 16px;
+        min-width: 0;
+    }
+
+    /* No celular, tabelas largas rolam para o lado dentro do próprio espaço,
+       em vez de alargar a página inteira (vale para todas as telas do Admin) */
+    .content table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .content th,
+    .content td {
+        white-space: nowrap;
     }
 
     .overlay {

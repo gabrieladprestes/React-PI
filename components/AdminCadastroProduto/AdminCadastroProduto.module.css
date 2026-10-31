@@ -9,6 +9,10 @@
     .layout {
         grid-template-columns: 1fr;
     }
+    /* Deixa a coluna encolher; a tabela rola dentro dela */
+    .layout > * {
+        min-width: 0;
+    }
 }
 
 .card {
