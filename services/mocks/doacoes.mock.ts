@@ -1,7 +1,7 @@
 import { IAdminHistoricoDoacao } from "../../interfaces/adminHistoricoDoacao.interface";
 import { IAdminHistoricoItem } from "../../interfaces/adminHistoricoRetirada.interface";
 import { IAdminSolicitacaoDoacao } from "../../interfaces/adminSolicitacao.interface";
-import { dataRelativa, diaDoMesAtual } from "../../utils/dateUtils";
+import { dataRelativa } from "../../utils/dateUtils";
 import { doadorPorId } from "./doadores.mock";
 import { produtoPorCodigo } from "./produtos.mock";
 import { loteFabricanteDe } from "./estoque.mock";
@@ -59,11 +59,11 @@ export const mockSolicitacoesDoacao: IAdminSolicitacaoDoacao[] = [
     proposta(12, 2,  "RG001", 20, dataRelativa(3), "pendente"),
     proposta(13, 7,  "RG001", 30, dataRelativa(7), "pendente"),
     proposta(14, 8,  "RG001", 6,  dataRelativa(1), "recusado"),
-    // Aprovadas: aparecem no Calendário e em Receber Doação
-    proposta(15, 3,  "RC001", 5,  diaDoMesAtual(4),  "aprovado"),
-    proposta(16, 4,  "RG001", 8,  diaDoMesAtual(10), "aprovado"),
-    proposta(17, 5,  "RC001", 50, diaDoMesAtual(15), "aprovado"),
-    proposta(18, 6,  "RG001", 12, diaDoMesAtual(19), "aprovado"),
-    proposta(19, 9,  "RC001", 15, diaDoMesAtual(24), "aprovado"),
-    proposta(20, 10, "RG001", 40, diaDoMesAtual(27), "aprovado"),
+    // Aprovadas: aparecem no Calendário, em Receber Doação e na Agenda do Dashboard
+    proposta(15, 3,  "RC001", 5,  dataRelativa(-2), "aprovado"),
+    proposta(16, 4,  "RG001", 8,  dataRelativa(0),  "aprovado"),
+    proposta(17, 5,  "RC001", 50, dataRelativa(1),  "aprovado"),
+    proposta(18, 6,  "RG001", 12, dataRelativa(3),  "aprovado"),
+    proposta(19, 9,  "RC001", 15, dataRelativa(5),  "aprovado"),
+    proposta(20, 10, "RG001", 40, dataRelativa(12), "aprovado"),
 ];

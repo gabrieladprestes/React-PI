@@ -208,6 +208,20 @@
     background: rgba(255,255,255,0.2);
 }
 
+/* Página atual: link destacado e grupo do menu marcado */
+.linkAtivo,
+.submenu a.linkAtivo,
+.submenuOpen a.linkAtivo {
+    background: rgba(255,255,255,0.28);
+    box-shadow: inset 4px 0 0 #FA7F08;
+    font-weight: 600;
+}
+
+.menuBtnAtivo {
+    background: rgba(255,255,255,0.24);
+    font-weight: 600;
+}
+
 /* Botão hamburguer */
 .hamburger {
     display: none;
