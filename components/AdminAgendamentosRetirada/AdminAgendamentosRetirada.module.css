@@ -182,3 +182,28 @@
     background: #f9fafb;
 }
 
+
+.btnMes {
+    background: none;
+    border: 1px solid #d5dfe0;
+    border-radius: 6px;
+    width: 30px;
+    height: 30px;
+    font-size: 1.1rem;
+    line-height: 1;
+    color: #348888;
+    cursor: pointer;
+}
+.btnMes:hover {
+    background: #eef7f7;
+}
+.calHoje {
+    outline: 2px solid #348888;
+    outline-offset: -2px;
+    font-weight: 700;
+}
+.semResultados {
+    text-align: center;
+    color: #888;
+    padding: 16px !important;
+}

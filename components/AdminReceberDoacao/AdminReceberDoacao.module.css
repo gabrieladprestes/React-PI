@@ -428,4 +428,7 @@
 @media (max-width: 640px) {
     .itensCabecalho { display: none; }
     .itemGrade { grid-template-columns: 1fr 1fr; }
+    /* produto na linha inteira; depois lote | validade; depois quantidade | remover */
+    .itemGrade > :first-child { grid-column: 1 / -1; }
+    .itemGrade > :last-child { justify-self: start; }
 }

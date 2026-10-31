@@ -20,25 +20,34 @@ export const AdminAgendamentosRetirada = () => {
         buscarDoacoesConfirmadas().then(setDoacoes);
     }, []);
 
-    const hoje = new Date();
-    const ano = hoje.getFullYear();
-    const mes = hoje.getMonth();
-    const nomeMes = hoje.toLocaleString("pt-BR", { month: "long", year: "numeric" });
+    // Mês exibido no calendário (começa no mês atual; as setas avançam e voltam)
+    const [deslocamentoMes, setDeslocamentoMes] = useState(0);
+    const hoje = getTodayDate();
+    const base = new Date();
+    const exibido = new Date(base.getFullYear(), base.getMonth() + deslocamentoMes, 1);
+    const ano = exibido.getFullYear();
+    const mes = exibido.getMonth();
+    const nomeMes = exibido.toLocaleString("pt-BR", { month: "long", year: "numeric" });
 
     const primeiroDia = new Date(ano, mes, 1).getDay();
     const totalDias = new Date(ano, mes + 1, 0).getDate();
 
     // Datas são texto "AAAA-MM-DD": comparamos pelo texto para não sofrer com fuso horário
-    const mesAtual = getTodayDate().slice(0, 7);
-    const dataDoDia = (dia: number) => `${mesAtual}-${String(dia).padStart(2, "0")}`;
+    const mesExibido = `${ano}-${String(mes + 1).padStart(2, "0")}`;
+    const dataDoDia = (dia: number) => `${mesExibido}-${String(dia).padStart(2, "0")}`;
 
     const datasAtivas = aba === "retiradas"
         ? retiradas.map(a => a.data)
         : doacoes.map(a => a.dataProposta);
 
     const diasComAgendamento = datasAtivas
-        .filter(d => d.slice(0, 7) === mesAtual)
+        .filter(d => d.slice(0, 7) === mesExibido)
         .map(d => Number(d.slice(8)));
+
+    function mudarMes(delta: number) {
+        setDeslocamentoMes(deslocamentoMes + delta);
+        setDiaSelecionado(null);
+    }
 
     const celulas: (number | null)[] = [];
     for (let i = 0; i < primeiroDia; i++) {
@@ -50,9 +59,11 @@ export const AdminAgendamentosRetirada = () => {
 
     function getClasseDia(dia: number | null) {
         if (dia === null) return styles.calDiaVazio;
-        if (dia === diaSelecionado) return styles.calDiaSelecionado;
-        if (diasComAgendamento.includes(dia)) return styles.calDiaComAgendamento;
-        return styles.calDia;
+        // O dia de hoje ganha um contorno, além da cor normal
+        const marcaHoje = dataDoDia(dia) === hoje ? ` ${styles.calHoje}` : "";
+        if (dia === diaSelecionado) return styles.calDiaSelecionado + marcaHoje;
+        if (diasComAgendamento.includes(dia)) return styles.calDiaComAgendamento + marcaHoje;
+        return styles.calDia + marcaHoje;
     }
 
     function clicarDia(dia: number) {
@@ -67,15 +78,15 @@ export const AdminAgendamentosRetirada = () => {
 
     const retiradaExibidas = diaSelecionado
         ? retiradas.filter(a => a.data === dataDoDia(diaSelecionado))
-        : retiradas;
+        : retiradas.filter(a => a.data.slice(0, 7) === mesExibido);
 
     const doacoesExibidas = diaSelecionado
         ? doacoes.filter(a => a.dataProposta === dataDoDia(diaSelecionado))
-        : doacoes;
+        : doacoes.filter(a => a.dataProposta.slice(0, 7) === mesExibido);
 
     const tituloLista = diaSelecionado
         ? `${aba === "retiradas" ? "Retiradas" : "Doações"} do dia ${diaSelecionado}`
-        : aba === "retiradas" ? "Todas as retiradas confirmadas" : "Todas as doações confirmadas";
+        : `${aba === "retiradas" ? "Retiradas" : "Doações"} confirmadas em ${nomeMes}`;
 
     return (
         <div>
@@ -99,7 +110,9 @@ export const AdminAgendamentosRetirada = () => {
             <div className={styles.grid}>
                 <div className={styles.calendario}>
                     <div className={styles.calHeader}>
+                        <button type="button" className={styles.btnMes} aria-label="Mês anterior" onClick={() => mudarMes(-1)}>‹</button>
                         <h3>📅 {nomeMes}</h3>
+                        <button type="button" className={styles.btnMes} aria-label="Próximo mês" onClick={() => mudarMes(1)}>›</button>
                     </div>
                     <div className={styles.calGrid}>
                         {DIAS_SEMANA.map(d => (
@@ -140,6 +153,9 @@ export const AdminAgendamentosRetirada = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    {retiradaExibidas.length === 0 && (
+                                        <tr><td colSpan={4} className={styles.semResultados}>Nenhuma retirada neste mês.</td></tr>
+                                    )}
                                     {retiradaExibidas.map(a => (
                                         <tr key={a.id}>
                                             <td>{a.donatario}</td>
@@ -163,6 +179,9 @@ export const AdminAgendamentosRetirada = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    {doacoesExibidas.length === 0 && (
+                                        <tr><td colSpan={4} className={styles.semResultados}>Nenhuma doação neste mês.</td></tr>
+                                    )}
                                     {doacoesExibidas.map(a => (
                                         <tr key={a.id}>
                                             <td>{a.doador}</td>

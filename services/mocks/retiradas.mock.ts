@@ -1,6 +1,6 @@
 import { IAdminHistoricoItem, IAdminHistoricoRetirada } from "../../interfaces/adminHistoricoRetirada.interface";
 import { IAdminSolicitacaoRetirada } from "../../interfaces/adminSolicitacao.interface";
-import { dataNoMesAtual, dataRelativa, diaDoMesAtual } from "../../utils/dateUtils";
+import { dataNoMesAtual, dataRelativa } from "../../utils/dateUtils";
 import { donatarioPorId } from "./donatarios.mock";
 import { produtoPorCodigo } from "./produtos.mock";
 import { loteFabricanteDe } from "./estoque.mock";
@@ -72,12 +72,13 @@ export const mockSolicitacoesRetirada: IAdminSolicitacaoRetirada[] = [
     solicitacao(17, 7,  [["RC001", 8]],               dataRelativa(-2), dataRelativa(5), "pendente"),
     solicitacao(18, 12, [["RC001", 4], ["RG001", 2]], dataRelativa(0),  dataRelativa(6), "pendente"),
     solicitacao(19, 2,  [["RC001", 15]],              dataRelativa(-6), dataRelativa(2), "recusado"),
-    // Aprovadas: aparecem no Calendário e na Saída de Doação
-    solicitacao(20, 4,  [["RC001", 3]],               dataRelativa(-20), diaDoMesAtual(3),  "aprovado"),
-    solicitacao(21, 6,  [["RC001", 3], ["RG001", 2]], dataRelativa(-15), diaDoMesAtual(8),  "aprovado"),
-    solicitacao(22, 8,  [["RG001", 3]],               dataRelativa(-12), diaDoMesAtual(12), "aprovado"),
-    solicitacao(23, 9,  [["RC001", 4], ["RG001", 2]], dataRelativa(-12), diaDoMesAtual(12), "aprovado"),
-    solicitacao(24, 10, [["RC001", 3]],               dataRelativa(-8),  diaDoMesAtual(17), "aprovado"),
-    solicitacao(25, 11, [["RG001", 3]],               dataRelativa(-5),  diaDoMesAtual(22), "aprovado"),
-    solicitacao(26, 13, [["RC001", 10]],              dataRelativa(-3),  diaDoMesAtual(26), "aprovado"),
+    // Aprovadas: aparecem no Calendário, na Saída de Doação e na Agenda do Dashboard.
+    // Algumas já passaram da data (atrasadas) e outras são dos próximos dias.
+    solicitacao(20, 4,  [["RC001", 3]],               dataRelativa(-12), dataRelativa(-3), "aprovado"),
+    solicitacao(21, 6,  [["RC001", 3], ["RG001", 2]], dataRelativa(-10), dataRelativa(-1), "aprovado"),
+    solicitacao(22, 8,  [["RG001", 3]],               dataRelativa(-8),  dataRelativa(0),  "aprovado"),
+    solicitacao(23, 9,  [["RC001", 4], ["RG001", 2]], dataRelativa(-7),  dataRelativa(1),  "aprovado"),
+    solicitacao(24, 10, [["RC001", 3]],               dataRelativa(-6),  dataRelativa(2),  "aprovado"),
+    solicitacao(25, 11, [["RG001", 3]],               dataRelativa(-5),  dataRelativa(4),  "aprovado"),
+    solicitacao(26, 13, [["RC001", 10]],              dataRelativa(-3),  dataRelativa(9),  "aprovado"),
 ];

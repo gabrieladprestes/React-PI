@@ -208,6 +208,20 @@
     background: rgba(255,255,255,0.2);
 }
 
+/* Página atual: link destacado e grupo do menu marcado */
+.linkAtivo,
+.submenu a.linkAtivo,
+.submenuOpen a.linkAtivo {
+    background: rgba(255,255,255,0.28);
+    box-shadow: inset 4px 0 0 #FA7F08;
+    font-weight: 600;
+}
+
+.menuBtnAtivo {
+    background: rgba(255,255,255,0.24);
+    font-weight: 600;
+}
+
 /* Botão hamburguer */
 .hamburger {
     display: none;
@@ -249,6 +263,20 @@
 
     .content {
         padding: 20px 16px;
+        min-width: 0;
+    }
+
+    /* No celular, tabelas largas rolam para o lado dentro do próprio espaço,
+       em vez de alargar a página inteira (vale para todas as telas do Admin) */
+    .content table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .content th,
+    .content td {
+        white-space: nowrap;
     }
 
     .overlay {
